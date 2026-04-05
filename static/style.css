@@ -38,3 +38,40 @@ body {
     opacity: 0.03;
     pointer-events: none;
 }
+
+.upload-grid-pattern {
+    background-image: radial-gradient(#66d9cc 0.5px, transparent 0.5px);
+    background-size: 24px 24px;
+    opacity: 0.05;
+}
+
+.glass-effect {
+    backdrop-filter: blur(20px);
+    background-color: rgba(25, 26, 26, 0.8);
+}
+
+.glow-hover:hover {
+    box-shadow: 0 0 20px rgba(102, 217, 204, 0.15);
+}
+
+.drag-over {
+    border-color: #66d9cc !important;
+    background-color: rgba(102, 217, 204, 0.05) !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #0e0e0e;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #484848;
+    border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #66d9cc;
+}

@@ -1,183 +1,79 @@
-<!DOCTYPE html>
-<html class="dark" lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Luminous Lens | Recent Studies</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"><script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          "colors": {
-            "on-error-container": "#ff9993",
-            "primary": "#66d9cc",
-            "secondary-fixed-dim": "#c1d8e4",
-            "on-primary-container": "#71e3d5",
-            "on-primary": "#004943",
-            "error-dim": "#bb5551",
-            "primary-dim": "#56cbbe",
-            "surface-container-high": "#1f2020",
-            "surface-container-lowest": "#000000",
-            "on-tertiary": "#4a6551",
-            "tertiary-fixed-dim": "#cbead1",
-            "on-background": "#e7e5e4",
-            "primary-container": "#005049",
-            "on-error": "#490106",
-            "tertiary-fixed": "#daf9df",
-            "outline-variant": "#484848",
-            "on-tertiary-container": "#425d4a",
-            "surface-tint": "#66d9cc",
-            "secondary-dim": "#8ba1ac",
-            "inverse-primary": "#006b63",
-            "on-secondary-container": "#acc3ce",
-            "secondary": "#8ba1ac",
-            "on-tertiary-fixed": "#334e3b",
-            "on-surface": "#e7e5e4",
-            "error": "#ee7d77",
-            "surface-container-highest": "#252626",
-            "secondary-container": "#293e48",
-            "error-container": "#7f2927",
-            "surface-container-low": "#131313",
-            "tertiary-dim": "#cbead1",
-            "inverse-surface": "#fcf8f8",
-            "on-surface-variant": "#acabaa",
-            "secondary-fixed": "#cfe6f2",
-            "surface-dim": "#0e0e0e",
-            "surface-bright": "#2c2c2c",
-            "primary-fixed-dim": "#75e7da",
-            "on-secondary-fixed": "#2d424c",
-            "surface-variant": "#252626",
-            "on-secondary-fixed-variant": "#495f69",
-            "surface-container": "#191a1a",
-            "inverse-on-surface": "#565554",
-            "on-tertiary-fixed-variant": "#4f6b57",
-            "tertiary-container": "#d4f3d9",
-            "on-primary-fixed-variant": "#00675f",
-            "surface": "#0e0e0e",
-            "primary-fixed": "#84f5e8",
-            "on-primary-fixed": "#004842",
-            "on-secondary": "#0d232b",
-            "tertiary": "#e9ffec",
-            "outline": "#767575"
-          },
-          "borderRadius": {
-            "DEFAULT": "0.125rem",
-            "lg": "0.25rem",
-            "xl": "0.5rem",
-            "full": "0.75rem"
-          },
-          "fontFamily": {
-            "headline": ["Manrope"],
-            "body": ["Inter"],
-            "label": ["Inter"]
-          }
-        },
-      },
-    }
-  </script>
-</head>
-<body class="bg-background text-on-surface selection:bg-primary selection:text-on-primary">
-<!-- TopNavBar -->
-<header class="flex justify-between items-center px-6 h-16 w-full z-50 bg-[#0e0e0e] fixed top-0 left-0">
-<div class="flex items-center gap-8">
-<div class="text-xl font-bold text-[#66d9cc] font-['Manrope'] tracking-tight">Luminous Lens</div>
-<nav class="hidden md:flex items-center space-x-6">
-<a class="text-[#e7e5e4]/60 font-['Manrope'] tracking-tight hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="{{ url_for('index') }}">Viewer</a>
-<a class="text-[#66d9cc] border-b-2 border-[#66d9cc] pb-1 font-['Manrope'] tracking-tight hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="#">Archive</a>
-<a class="text-[#e7e5e4]/60 font-['Manrope'] tracking-tight hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="#">Analysis</a>
-</nav>
-</div>
-<div class="flex items-center space-x-4">
-<span class="material-symbols-outlined text-[#e7e5e4]/60 cursor-pointer hover:text-[#66d9cc] transition-colors">settings</span>
-<span class="material-symbols-outlined text-[#e7e5e4]/60 cursor-pointer hover:text-[#66d9cc] transition-colors">help</span>
-<span class="material-symbols-outlined text-[#66d9cc] cursor-pointer active:opacity-80" data-weight="fill" style="font-variation-settings: 'FILL' 1;">account_circle</span>
-</div>
-</header>
-<!-- SideNavBar -->
-<!-- Main Canvas -->
+{% extends "base.html" %}
+{% block title %}Luminous Lens | Archive{% endblock %}
+{% block content %}
 <main class="pt-16 min-h-screen bg-surface">
-<div class="p-8 max-w-7xl mx-auto">
-<!-- Header Section -->
-<div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
-<div>
-<h1 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface mb-2">History & Archive</h1>
-<p class="font-body text-on-surface-variant max-w-xl">
-            Access recent diagnostic imaging sessions. Review patient DICOM metadata and resume analysis seamlessly.
-          </p>
-</div>
-<div class="flex items-center space-x-2 bg-surface-container rounded-sm px-3 py-1.5 border border-outline-variant/15">
-<span class="material-symbols-outlined text-on-surface-variant text-sm">filter_list</span>
-<span class="text-xs font-label uppercase tracking-widest text-on-surface-variant">Sort By: Date Modified</span>
-</div>
-</div>
-<!-- Bento Grid Layout for Recent Studies -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-{% for study in studies %}
-<div class="group relative bg-surface-container rounded-sm overflow-hidden transition-all duration-300 hover:bg-surface-container-high ring-1 ring-outline-variant/10 hover:ring-primary/30">
-<div class="aspect-video w-full relative bg-surface-container-lowest overflow-hidden">
-<img class="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" src="data:image/png;base64,{{ study.thumbnail }}" alt="DICOM Thumbnail" />
-<div class="absolute inset-0 image-grain"></div>
-<div class="absolute top-3 left-3 bg-surface-container-lowest/80 backdrop-blur-md px-2 py-0.5 rounded-sm border border-outline-variant/20">
-<span class="font-label text-[10px] text-primary uppercase font-bold tracking-tighter">{{ study.modality }}</span>
-</div>
-</div>
-<div class="p-5">
-<div class="flex justify-between items-start mb-4">
-<div>
-<h3 class="font-headline font-bold text-on-surface text-lg leading-tight">{{ study.patient_name }}</h3>
-<p class="font-label text-xs text-on-surface-variant mt-1">Uploaded: {{ study.upload_date }} • {{ study.file_size_mb }} MB</p>
-</div>
-<span class="material-symbols-outlined text-primary cursor-pointer" style="font-variation-settings: 'FILL' 1;">verified_user</span>
-</div>
-<div class="flex items-center space-x-3 mt-6">
-<a href="{{ url_for('image_view', file_id=study.file_id) }}" class="flex-1 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-on-primary text-xs font-semibold rounded-sm transition-colors flex items-center justify-center space-x-1">
-<span class="material-symbols-outlined text-sm">open_in_new</span>
-<span>Open Study</span>
-</a>
-<button class="p-2 text-on-surface-variant hover:text-error-dim transition-colors">
-<span class="material-symbols-outlined text-lg">delete</span>
-</button>
-</div>
-</div>
-</div>
-{% endfor %}
-<!-- Empty State / Add New -->
-<div class="border-2 border-dashed border-outline-variant/20 rounded-sm flex flex-col items-center justify-center p-8 bg-surface-container/30 hover:bg-surface-container/50 transition-colors cursor-pointer group">
-<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-<span class="material-symbols-outlined text-primary">add</span>
-</div>
-<a href="{{ url_for('index') }}" class="font-headline font-bold text-on-surface">Upload New Study</a>
-<span class="font-label text-[10px] uppercase text-on-surface-variant tracking-widest mt-2">DICOM / NIFTI / NRRD</span>
-</div>
-</div>
-<!-- Footer / Data Density Stats -->
-<div class="mt-12 flex flex-col md:flex-row items-center justify-between p-6 border-t border-outline-variant/10 gap-6">
-<div class="flex items-center space-x-8">
-<div>
-<div class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest mb-1">Total Archive Size</div>
-<div class="font-headline text-lg font-bold text-primary">{{ total_size_gb }} GB / 5.0 TB</div>
-</div>
-<div>
-<div class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest mb-1">Active Series</div>
-<div class="font-headline text-lg font-bold text-on-surface">{{ total_studies }}</div>
-</div>
-</div>
-<div class="flex items-center space-x-4">
-<div class="text-xs text-on-surface-variant">Showing 1-{{ studies|length }} of {{ total_studies }} studies</div>
-<div class="flex items-center space-x-1">
-<button class="p-1.5 rounded-sm hover:bg-surface-container-highest text-on-surface-variant disabled:opacity-20">
-<span class="material-symbols-outlined">chevron_left</span>
-</button>
-<button class="p-1.5 rounded-sm hover:bg-surface-container-highest text-on-surface-variant">
-<span class="material-symbols-outlined">chevron_right</span>
-</button>
-</div>
-</div>
-</div>
-</div>
+  <div class="p-8 max-w-7xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+      <div>
+        <h1 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface mb-2">History & Archive</h1>
+        <p class="font-body text-on-surface-variant max-w-xl">Access recent diagnostic imaging sessions. Review patient DICOM metadata and resume analysis seamlessly.</p>
+      </div>
+      <div class="flex items-center space-x-2 bg-surface-container rounded-sm px-3 py-1.5 border border-outline-variant/15">
+        <span class="material-symbols-outlined text-on-surface-variant text-sm">filter_list</span>
+        <span class="text-xs font-label uppercase tracking-widest text-on-surface-variant">Sort By: Date Modified</span>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for study in studies %}
+      <div class="group relative bg-surface-container rounded-sm overflow-hidden transition-all duration-300 hover:bg-surface-container-high ring-1 ring-outline-variant/10 hover:ring-primary/30">
+        <div class="aspect-video w-full relative bg-surface-container-lowest overflow-hidden">
+          <img class="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" src="data:image/png;base64,{{ study.thumbnail }}" alt="DICOM Thumbnail" />
+          <div class="absolute inset-0 image-grain"></div>
+          <div class="absolute top-3 left-3 bg-surface-container-lowest/80 backdrop-blur-md px-2 py-0.5 rounded-sm border border-outline-variant/20">
+            <span class="font-label text-[10px] text-primary uppercase font-bold tracking-tighter">{{ study.modality }}</span>
+          </div>
+        </div>
+        <div class="p-5">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 class="font-headline font-bold text-on-surface text-lg leading-tight">{{ study.patient_name }}</h3>
+              <p class="font-label text-xs text-on-surface-variant mt-1">Uploaded: {{ study.upload_date }} • {{ study.file_size_mb }} MB</p>
+            </div>
+            <span class="material-symbols-outlined text-primary cursor-pointer" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+          </div>
+          <div class="flex items-center space-x-3 mt-6">
+            <a href="{{ url_for('image_view', file_id=study.file_id) }}" class="flex-1 py-2 bg-primary/10 text-primary hover:bg-primary hover:text-on-primary text-xs font-semibold rounded-sm transition-colors flex items-center justify-center space-x-1">
+              <span class="material-symbols-outlined text-sm">open_in_new</span>
+              <span>Open Study</span>
+            </a>
+            <button class="p-2 text-on-surface-variant hover:text-error-dim transition-colors">
+              <span class="material-symbols-outlined text-lg">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      <div class="border-2 border-dashed border-outline-variant/20 rounded-sm flex flex-col items-center justify-center p-8 bg-surface-container/30 hover:bg-surface-container/50 transition-colors cursor-pointer group">
+        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+          <span class="material-symbols-outlined text-primary">add</span>
+        </div>
+        <a href="{{ url_for('index') }}" class="font-headline font-bold text-on-surface">Upload New Study</a>
+        <span class="font-label text-[10px] uppercase text-on-surface-variant tracking-widest mt-2">DICOM / NIFTI / NRRD</span>
+      </div>
+    </div>
+    <div class="mt-12 flex flex-col md:flex-row items-center justify-between p-6 border-t border-outline-variant/10 gap-6">
+      <div class="flex items-center space-x-8">
+        <div>
+          <div class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest mb-1">Total Archive Size</div>
+          <div class="font-headline text-lg font-bold text-primary">{{ total_size_gb }} GB / 5.0 TB</div>
+        </div>
+        <div>
+          <div class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest mb-1">Active Series</div>
+          <div class="font-headline text-lg font-bold text-on-surface">{{ total_studies }}</div>
+        </div>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div class="text-xs text-on-surface-variant">Showing 1-{{ studies|length }} of {{ total_studies }} studies</div>
+        <div class="flex items-center space-x-1">
+          <button class="p-1.5 rounded-sm hover:bg-surface-container-highest text-on-surface-variant disabled:opacity-20">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <button class="p-1.5 rounded-sm hover:bg-surface-container-highest text-on-surface-variant">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </main>
-</body>
-</html>
+{% endblock %}

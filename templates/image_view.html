@@ -1,210 +1,87 @@
-<!DOCTYPE html>
-<html class="dark" lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Luminous Lens | Diagnostic Suite</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script src="{{ url_for('static', filename='viewer.js') }}"></script><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            "colors": {
-                    "on-error-container": "#ff9993",
-                    "primary": "#66d9cc",
-                    "secondary-fixed-dim": "#c1d8e4",
-                    "on-primary-container": "#71e3d5",
-                    "on-primary": "#004943",
-                    "error-dim": "#bb5551",
-                    "primary-dim": "#56cbbe",
-                    "surface-container-high": "#1f2020",
-                    "surface-container-lowest": "#000000",
-                    "on-tertiary": "#4a6551",
-                    "tertiary-fixed-dim": "#cbead1",
-                    "on-background": "#e7e5e4",
-                    "primary-container": "#005049",
-                    "on-error": "#490106",
-                    "tertiary-fixed": "#daf9df",
-                    "outline-variant": "#484848",
-                    "on-tertiary-container": "#425d4a",
-                    "surface-tint": "#66d9cc",
-                    "secondary-dim": "#8ba1ac",
-                    "inverse-primary": "#006b63",
-                    "on-secondary-container": "#acc3ce",
-                    "secondary": "#8ba1ac",
-                    "on-tertiary-fixed": "#334e3b",
-                    "on-surface": "#e7e5e4",
-                    "error": "#ee7d77",
-                    "surface-container-highest": "#252626",
-                    "secondary-container": "#293e48",
-                    "error-container": "#7f2927",
-                    "surface-container-low": "#131313",
-                    "tertiary-dim": "#cbead1",
-                    "inverse-surface": "#fcf8f8",
-                    "on-surface-variant": "#acabaa",
-                    "secondary-fixed": "#cfe6f2",
-                    "surface-dim": "#0e0e0e",
-                    "surface-bright": "#2c2c2c",
-                    "primary-fixed-dim": "#75e7da",
-                    "on-secondary-fixed": "#2d424c",
-                    "surface-variant": "#252626",
-                    "on-secondary-fixed-variant": "#495f69",
-                    "surface-container": "#191a1a",
-                    "inverse-on-surface": "#565554",
-                    "on-tertiary-fixed-variant": "#4f6b57",
-                    "tertiary-container": "#d4f3d9",
-                    "on-primary-fixed-variant": "#00675f",
-                    "surface": "#0e0e0e",
-                    "primary-fixed": "#84f5e8",
-                    "on-primary-fixed": "#004842",
-                    "on-secondary": "#0d232b",
-                    "tertiary": "#e9ffec",
-                    "outline": "#767575"
-            },
-            "borderRadius": {
-                    "DEFAULT": "0.125rem",
-                    "lg": "0.25rem",
-                    "xl": "0.5rem",
-                    "full": "0.75rem"
-            },
-            "fontFamily": {
-                    "headline": ["Manrope"],
-                    "body": ["Inter"],
-                    "label": ["Inter"]
-            }
-          },
-        },
-      }
-    </script>
-<style>
-        body {
-            overflow: hidden;
-        }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-    </style>
-</head>
-<body class="font-body selection:bg-primary/30">
-<!-- TopNavBar -->
-<header class="bg-[#0e0e0e] text-[#66d9cc] font-['Manrope'] tracking-tight flex justify-between items-center px-6 h-16 w-full z-50 docked full-width top-0 bg-[#191a1a] flat no shadows">
-<div class="flex items-center gap-8">
-<span class="text-xl font-bold text-[#66d9cc]">Luminous Lens</span>
-<nav class="hidden md:flex space-x-6 items-center">
-<a class="text-[#66d9cc] border-b-2 border-[#66d9cc] pb-1 cursor-pointer active:opacity-80 transition-colors" href="#">Viewer</a>
-<a class="text-[#e7e5e4]/60 hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="#">Archive</a>
-<a class="text-[#e7e5e4]/60 hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="{{ url_for('recent') }}">Analysis</a>
-</nav>
-</div>
-<div class="flex items-center space-x-4">
-<span class="material-symbols-outlined text-[#e7e5e4]/60 hover:text-[#66d9cc] cursor-pointer" data-icon="settings">settings</span>
-<span class="material-symbols-outlined text-[#e7e5e4]/60 hover:text-[#66d9cc] cursor-pointer" data-icon="help">help</span>
-<span class="material-symbols-outlined text-[#e7e5e4]/60 hover:text-[#66d9cc] cursor-pointer" data-icon="account_circle">account_circle</span>
-</div>
-</header>
+{% extends "base.html" %}
+{% block title %}Luminous Lens | Image Viewer{% endblock %}
+{% block content %}
 <div class="flex h-[calc(100vh-64px)] pt-0 overflow-hidden">
-<main class="flex-1 flex flex-col bg-surface-container-lowest relative overflow-hidden">
-<!-- DICOM Metadata Overlays (Absolute positioning inside viewer) -->
-<div class="absolute top-4 left-6 z-10 pointer-events-none">
-<div class="flex flex-col gap-1">
-<span class="text-on-surface font-headline font-bold text-lg leading-tight tracking-tight">{{ patient_name }}</span>
-<span class="text-on-surface-variant font-label text-xs">ID: {{ patient_id }}</span>
-<span class="text-on-surface-variant font-label text-xs">DOB: {{ patient_birth_date }}</span>
+  <main class="flex-1 flex flex-col bg-surface-container-lowest relative overflow-hidden">
+    <div class="absolute top-4 left-6 z-10 pointer-events-none">
+      <div class="flex flex-col gap-1">
+        <span class="text-on-surface font-headline font-bold text-lg leading-tight tracking-tight">{{ patient_name }}</span>
+        <span class="text-on-surface-variant font-label text-xs">ID: {{ patient_id }}</span>
+        <span class="text-on-surface-variant font-label text-xs">DOB: {{ patient_birth_date }}</span>
+      </div>
+    </div>
+    <div class="absolute top-4 right-6 z-10 pointer-events-none text-right">
+      <div class="flex flex-col gap-1">
+        <span class="text-on-surface font-label text-xs">STUDY: {{ study_description }}</span>
+        <span class="text-on-surface-variant font-label text-xs">ACQ: {{ acquisition_date_time }}</span>
+        <span class="text-on-surface-variant font-label text-xs">INST: {{ institution_name }}</span>
+      </div>
+    </div>
+    <div class="absolute top-20 right-6 z-20">
+      <a href="{{ url_for('view_dicom', file_id=file_id) }}" class="inline-flex items-center gap-2 bg-primary text-on-primary px-3 py-2 rounded-sm text-[11px] uppercase tracking-[0.18em] font-semibold shadow-lg hover:bg-primary-dim transition-colors">
+        <span class="material-symbols-outlined text-sm">tag</span>
+        View Tags
+      </a>
+    </div>
+    <div class="absolute bottom-28 left-6 z-10 pointer-events-none">
+      <div class="flex flex-col gap-1 rounded-sm bg-[#111111cc] px-3 py-2 shadow-lg">
+        <span class="text-primary font-label text-xs font-semibold">WL: {{ window_center }} / WW: {{ window_width }}</span>
+        <span class="text-on-surface-variant font-label text-xs" id="zoom-level">ZOOM: {{ zoom }}%</span>
+        <span class="text-on-surface-variant font-label text-xs" id="mouse-coords">X: 0, Y: 0</span>
+      </div>
+    </div>
+    <div class="flex-1 flex items-center justify-center p-8 bg-surface-container-lowest">
+      <div class="relative w-full h-full flex items-center justify-center">
+        <img id="dicom-image" data-file-id="{{ file_id }}" alt="DICOM X-Ray View" class="max-w-full max-h-full w-auto h-auto cursor-grab" src="data:image/png;base64,{{ image_data }}" />
+      </div>
+    </div>
+  </main>
+  <aside class="w-80 bg-surface-container flex flex-col p-6 space-y-8 z-30">
+    <header class="flex items-center justify-between">
+      <h3 class="font-headline font-bold text-on-surface tracking-tight uppercase text-sm">Windowing Controls</h3>
+      <span class="material-symbols-outlined text-primary text-lg" data-icon="tune">tune</span>
+    </header>
+    <div class="space-y-10">
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <label class="text-xs font-label uppercase text-on-surface-variant tracking-wider">Window Width</label>
+          <span class="font-mono text-primary text-sm font-semibold" id="ww-value">{{ window_width }}</span>
+        </div>
+        <input type="range" min="1" max="1024" value="{{ window_width }}" class="w-full h-1 bg-surface-variant rounded-full appearance-none cursor-pointer slider" id="ww-slider">
+        <div class="flex justify-between text-[10px] text-on-surface-variant/40">
+          <span>1</span>
+          <span>1024</span>
+        </div>
+      </div>
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <label class="text-xs font-label uppercase text-on-surface-variant tracking-wider">Window Center</label>
+          <span class="font-mono text-primary text-sm font-semibold" id="wc-value">{{ window_center }}</span>
+        </div>
+        <input type="range" min="-150" max="150" value="{{ window_center }}" class="w-full h-1 bg-surface-variant rounded-full appearance-none cursor-pointer slider" id="wc-slider">
+        <div class="flex justify-between text-[10px] text-on-surface-variant/40">
+          <span>-150</span>
+          <span>150</span>
+        </div>
+      </div>
+    </div>
+    <div class="space-y-4">
+      <h4 class="text-[10px] font-label uppercase text-on-surface-variant tracking-widest mb-4">Zoom Controls</h4>
+      <div class="flex gap-2">
+        <button id="zoom-in" class="flex-1 bg-primary text-on-primary py-2 rounded-sm font-semibold text-xs uppercase hover:bg-primary-dim transition-colors">
+          <span class="material-symbols-outlined text-sm mr-1">zoom_in</span>
+          Zoom In
+        </button>
+        <button id="zoom-out" class="flex-1 bg-surface-container-high text-on-surface py-2 rounded-sm font-semibold text-xs uppercase hover:bg-surface-container-highest transition-colors">
+          <span class="material-symbols-outlined text-sm mr-1">zoom_out</span>
+          Zoom Out
+        </button>
+      </div>
+      <button id="reset-zoom" class="w-full bg-surface-container-high text-on-surface py-2 rounded-sm font-semibold text-xs uppercase hover:bg-surface-container-highest transition-colors mt-2">
+        <span class="material-symbols-outlined text-sm mr-1">restart_alt</span>
+        Reset Zoom
+      </button>
+    </div>
+  </aside>
 </div>
-</div>
-<div class="absolute top-4 right-6 z-10 pointer-events-none text-right">
-<div class="flex flex-col gap-1">
-<span class="text-on-surface font-label text-xs">STUDY: {{ study_description }}</span>
-<span class="text-on-surface-variant font-label text-xs">ACQ: {{ acquisition_date_time }}</span>
-<span class="text-on-surface-variant font-label text-xs">INST: {{ institution_name }}</span>
-</div>
-</div>
-<div class="absolute top-20 right-6 z-20">
-<a href="{{ url_for('view_dicom', file_id=file_id) }}" class="inline-flex items-center gap-2 bg-primary text-on-primary px-3 py-2 rounded-sm text-[11px] uppercase tracking-[0.18em] font-semibold shadow-lg hover:bg-primary-dim transition-colors">
-<span class="material-symbols-outlined text-sm">tag</span>
-View Tags
-</a>
-</div>
-<div class="absolute bottom-28 left-6 z-10 pointer-events-none">
-<div class="flex flex-col gap-1 rounded-sm bg-[#111111cc] px-3 py-2 shadow-lg">
-<span class="text-primary font-label text-xs font-semibold">WL: {{ window_center }} / WW: {{ window_width }}</span>
-<span class="text-on-surface-variant font-label text-xs" id="zoom-level">ZOOM: {{ zoom }}%</span>
-<span class="text-on-surface-variant font-label text-xs" id="mouse-coords">X: 0, Y: 0</span>
-</div>
-</div>
-<!-- The DICOM Image Display -->
-<div class="flex-1 flex items-center justify-center p-8 bg-surface-container-lowest">
-<div class="relative w-full h-full flex items-center justify-center">
-<img id="dicom-image" data-file-id="{{ file_id }}" alt="DICOM X-Ray View" class="max-w-full max-h-full w-auto h-auto cursor-grab" src="data:image/png;base64,{{ image_data }}" />
-</div>
-</div>
-</main>
-<!-- Right Control Panel (Contextual Windowing Tools) -->
-<aside class="w-80 bg-surface-container flex flex-col p-6 space-y-8 z-30">
-<header class="flex items-center justify-between">
-<h3 class="font-headline font-bold text-on-surface tracking-tight uppercase text-sm">Windowing Controls</h3>
-<span class="material-symbols-outlined text-primary text-lg" data-icon="tune">tune</span>
-</header>
-<!-- Sliders for Window Center/Width -->
-<div class="space-y-10">
-<div class="space-y-4">
-<div class="flex justify-between items-center">
-<label class="text-xs font-label uppercase text-on-surface-variant tracking-wider">Window Width</label>
-<span class="font-mono text-primary text-sm font-semibold" id="ww-value">{{ window_width }}</span>
-</div>
-<input type="range" min="1" max="1024" value="{{ window_width }}" class="w-full h-1 bg-surface-variant rounded-full appearance-none cursor-pointer slider" id="ww-slider">
-<div class="flex justify-between text-[10px] text-on-surface-variant/40">
-<span>1</span>
-<span>1024</span>
-</div>
-</div>
-<div class="space-y-4">
-<div class="flex justify-between items-center">
-<label class="text-xs font-label uppercase text-on-surface-variant tracking-wider">Window Center</label>
-<span class="font-mono text-primary text-sm font-semibold" id="wc-value">{{ window_center }}</span>
-</div>
-<input type="range" min="-150" max="150" value="{{ window_center }}" class="w-full h-1 bg-surface-variant rounded-full appearance-none cursor-pointer slider" id="wc-slider">
-<div class="flex justify-between text-[10px] text-on-surface-variant/40">
-<span>-150</span>
-<span>150</span>
-</div>
-</div>
-</div>
-<!-- Zoom Controls -->
-<div class="space-y-4">
-<h4 class="text-[10px] font-label uppercase text-on-surface-variant tracking-widest mb-4">Zoom Controls</h4>
-<div class="flex gap-2">
-<button id="zoom-in" class="flex-1 bg-primary text-on-primary py-2 rounded-sm font-semibold text-xs uppercase hover:bg-primary-dim transition-colors">
-<span class="material-symbols-outlined text-sm mr-1">zoom_in</span>
-Zoom In
-</button>
-<button id="zoom-out" class="flex-1 bg-surface-container-high text-on-surface py-2 rounded-sm font-semibold text-xs uppercase hover:bg-surface-container-highest transition-colors">
-<span class="material-symbols-outlined text-sm mr-1">zoom_out</span>
-Zoom Out
-</button>
-</div>
-<button id="reset-zoom" class="w-full bg-surface-container-high text-on-surface py-2 rounded-sm font-semibold text-xs uppercase hover:bg-surface-container-highest transition-colors mt-2">
-<span class="material-symbols-outlined text-sm mr-1">restart_alt</span>
-Reset Zoom
-</button>
-</div>
-
-<!-- Slice Navigation Info -->
-<div class="mt-auto bg-surface-container-lowest p-4 rounded-sm border-l-2 border-primary">
-<div class="flex items-center justify-between mb-2">
-<span class="text-[10px] font-label text-on-surface-variant uppercase">Series Progress</span>
-<span class="text-[10px] font-mono text-primary">{{ slice_count }} / 1</span>
-</div>
-<div class="h-1 bg-surface-variant w-full rounded-full overflow-hidden">
-<div class="h-full bg-primary" style="width: 100%"></div>
-</div>
-</div>
-</aside>
-</div>
-
-</div>
-
-</body>
-</html>
+{% endblock %}

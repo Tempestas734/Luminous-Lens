@@ -1,219 +1,74 @@
-<!DOCTYPE html>
-<html class="dark" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          "colors": {
-                  "on-error-container": "#ff9993",
-                  "primary": "#66d9cc",
-                  "secondary-fixed-dim": "#c1d8e4",
-                  "on-primary-container": "#71e3d5",
-                  "on-primary": "#004943",
-                  "error-dim": "#bb5551",
-                  "primary-dim": "#56cbbe",
-                  "surface-container-high": "#1f2020",
-                  "surface-container-lowest": "#000000",
-                  "on-tertiary": "#4a6551",
-                  "tertiary-fixed-dim": "#cbead1",
-                  "on-background": "#e7e5e4",
-                  "primary-container": "#005049",
-                  "background": "#0e0e0e",
-                  "on-error": "#490106",
-                  "tertiary-fixed": "#daf9df",
-                  "outline-variant": "#484848",
-                  "on-tertiary-container": "#425d4a",
-                  "surface-tint": "#66d9cc",
-                  "secondary-dim": "#8ba1ac",
-                  "inverse-primary": "#006b63",
-                  "on-secondary-container": "#acc3ce",
-                  "secondary": "#8ba1ac",
-                  "on-tertiary-fixed": "#334e3b",
-                  "on-surface": "#e7e5e4",
-                  "error": "#ee7d77",
-                  "surface-container-highest": "#252626",
-                  "secondary-container": "#293e48",
-                  "error-container": "#7f2927",
-                  "surface-container-low": "#131313",
-                  "tertiary-dim": "#cbead1",
-                  "inverse-surface": "#fcf8f8",
-                  "on-surface-variant": "#acabaa",
-                  "secondary-fixed": "#cfe6f2",
-                  "surface-dim": "#0e0e0e",
-                  "surface-bright": "#2c2c2c",
-                  "primary-fixed-dim": "#75e7da",
-                  "on-secondary-fixed": "#2d424c",
-                  "surface-variant": "#252626",
-                  "on-secondary-fixed-variant": "#495f69",
-                  "surface-container": "#191a1a",
-                  "inverse-on-surface": "#565554",
-                  "on-tertiary-fixed-variant": "#4f6b57",
-                  "tertiary-container": "#d4f3d9",
-                  "on-primary-fixed-variant": "#00675f",
-                  "surface": "#0e0e0e",
-                  "primary-fixed": "#84f5e8",
-                  "on-primary-fixed": "#004842",
-                  "on-secondary": "#0d232b",
-                  "tertiary": "#e9ffec",
-                  "outline": "#767575"
-          },
-          "borderRadius": {
-                  "DEFAULT": "0.125rem",
-                  "lg": "0.25rem",
-                  "xl": "0.5rem",
-                  "full": "0.75rem"
-          },
-          "fontFamily": {
-                  "headline": ["Manrope"],
-                  "body": ["Inter"],
-                  "label": ["Inter"],
-                  "mono": ["JetBrains Mono"]
-          }
-        },
-      },
-    }
-  </script>
-<style>
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 4px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: #0e0e0e;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #484848;
-      border-radius: 2px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #66d9cc;
-    }
-  </style>
-</head>
-<body class="bg-background text-on-surface font-body selection:bg-primary/30">
-<!-- TopNavBar Implementation -->
-<header class="bg-[#0e0e0e] text-[#66d9cc] font-['Manrope'] tracking-tight flex justify-between items-center px-6 h-16 w-full z-50 fixed top-0">
-<div class="flex items-center gap-8">
-<span class="text-xl font-bold text-[#66d9cc]">Luminous Lens</span>
-<nav class="hidden md:flex items-center space-x-8">
-<a class="text-[#e7e5e4]/60 hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="#">Viewer</a>
-<a class="text-[#e7e5e4]/60 hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="#">Archive</a>
-<a class="text-[#66d9cc] border-b-2 border-[#66d9cc] pb-1 cursor-pointer active:opacity-80" href="#">Analysis</a>
-</nav>
-</div>
-<div class="flex items-center space-x-6">
-<span class="material-symbols-outlined text-[#e7e5e4]/60 hover:text-[#66d9cc] cursor-pointer transition-colors" data-icon="settings">settings</span>
-<span class="material-symbols-outlined text-[#e7e5e4]/60 hover:text-[#66d9cc] cursor-pointer transition-colors" data-icon="help">help</span>
-<span class="material-symbols-outlined text-[#e7e5e4]/60 hover:text-[#66d9cc] cursor-pointer transition-colors" data-icon="account_circle">account_circle</span>
-</div>
-</header>
-<!-- Main Content Canvas -->
+{% extends "base.html" %}
+{% block title %}Luminous Lens | Metadata Viewer{% endblock %}
+{% block content %}
 <main class="pt-16 min-h-screen bg-surface">
-<div class="p-8 max-w-7xl mx-auto">
-<!-- Page Header & Search Bar Section -->
-<section class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-<div>
-<h1 class="font-headline text-4xl font-extrabold tracking-tighter text-on-surface mb-2">Analysis Metadata</h1>
-<p class="text-on-surface-variant font-body max-w-md">Detailed DICOM header attributes for Study Instance <span class="text-primary font-mono text-sm">{{ study_instance_uid }}</span></p>
-</div>
-<div class="flex gap-4">
-<div class="relative w-full md:w-96">
-<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg" data-icon="search">search</span>
-<input id="tag-search" class="w-full bg-surface-container border-none text-on-surface placeholder:text-on-surface-variant/40 rounded-lg pl-12 pr-4 py-3 focus:ring-1 focus:ring-primary/30 transition-all" placeholder="Search by Tag ID or Description..." type="text"/>
-</div>
-<a href="{{ url_for('image_view', file_id=file_id) }}" class="bg-primary text-on-primary px-6 py-3 rounded-lg font-semibold hover:bg-primary-dim transition-colors">View Image</a>
-</div>
-</section>
-<!-- Bento-style Meta Summary Grid -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-<div class="bg-surface-container-low p-6 rounded-lg border border-outline-variant/10">
-<span class="text-xs uppercase tracking-widest text-on-surface-variant block mb-2">Modality</span>
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-primary" data-icon="neurology">neurology</span>
-<span class="text-xl font-bold font-headline">{{ modality }}</span>
-</div>
-</div>
-<div class="bg-surface-container-low p-6 rounded-lg border border-outline-variant/10">
-<span class="text-xs uppercase tracking-widest text-on-surface-variant block mb-2">Patient ID</span>
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-primary" data-icon="person">person</span>
-<span class="text-xl font-bold font-headline">{{ patient_id }}</span>
-</div>
-</div>
-<div class="bg-surface-container-low p-6 rounded-lg border border-outline-variant/10">
-<span class="text-xs uppercase tracking-widest text-on-surface-variant block mb-2">Slice Count</span>
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-primary" data-icon="reorder">reorder</span>
-<span class="text-xl font-bold font-headline">{{ slice_count }}</span>
-</div>
-</div>
-<div class="bg-surface-container-low p-6 rounded-lg border border-outline-variant/10">
-<span class="text-xs uppercase tracking-widest text-on-surface-variant block mb-2">Encryption</span>
-<div class="flex items-center gap-3">
-<span class="material-symbols-outlined text-primary" data-icon="verified_user">verified_user</span>
-<span class="text-xl font-bold font-headline">{{ encryption }}</span>
-</div>
-</div>
-</div>
-<!-- DICOM Metadata Table Shell -->
-<div class="bg-surface-container rounded-xl overflow-hidden shadow-2xl border border-outline-variant/5">
-<!-- Table Header -->
-<div class="grid grid-cols-3 bg-surface-container-high border-b border-outline-variant/20 px-6 py-4">
-<div class="text-xs font-bold uppercase tracking-widest text-primary/80">Tag ID</div>
-<div class="text-xs font-bold uppercase tracking-widest text-primary/80">Description</div>
-<div class="text-xs font-bold uppercase tracking-widest text-primary/80">Value</div>
-</div>
-<!-- Table Body -->
-<div class="max-h-[600px] overflow-y-auto custom-scrollbar" id="tag-table">
-{% for tag in tags %}
-<div class="grid grid-cols-3 px-6 py-5 items-center {% if loop.index % 2 == 0 %}bg-surface-container-low/30{% endif %} hover:bg-surface-container-highest/50 transition-colors group tag-row" data-tag="{{ tag.tag }}" data-name="{{ tag.name }}">
-<div class="font-mono text-sm text-on-surface-variant">{{ tag.tag }}</div>
-<div class="font-semibold text-on-surface">{{ tag.name }}</div>
-<div class="font-mono text-sm text-primary tracking-tight truncate">{{ tag.value }}</div>
-</div>
-{% endfor %}
-</div>
-</div>
-<!-- Footer Metadata Control -->
-<div class="mt-8 flex justify-between items-center text-on-surface-variant">
-<div class="flex items-center gap-4 text-xs font-mono">
-<span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> SYSTEM READY</span>
-<span class="opacity-30">|</span>
-<span>TAG_COUNT: {{ tags|length }}</span>
-</div>
-<div class="flex gap-2">
-<button class="px-4 py-2 bg-surface-container-highest hover:bg-primary hover:text-on-primary transition-all rounded-sm text-xs font-bold flex items-center gap-2">
-<span class="material-symbols-outlined text-sm" data-icon="download">download</span> EXPORT CSV
-          </button>
-<button class="px-4 py-2 bg-surface-container-highest hover:bg-primary hover:text-on-primary transition-all rounded-sm text-xs font-bold flex items-center gap-2">
-<span class="material-symbols-outlined text-sm" data-icon="print">print</span> PRINT REPORT
-          </button>
-</div>
-</div>
-</div>
+  <div class="p-8 max-w-7xl mx-auto">
+    <section class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div>
+        <h1 class="font-headline text-4xl font-extrabold tracking-tighter text-on-surface mb-2">Analysis Metadata</h1>
+        <p class="text-on-surface-variant font-body max-w-md">Detailed DICOM header attributes for Study Instance <span class="text-primary font-mono text-sm">{{ study_instance_uid }}</span></p>
+      </div>
+      <div class="flex gap-4">
+        <div class="relative w-full md:w-96">
+          <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg" data-icon="search">search</span>
+          <input id="tag-search" class="w-full bg-surface-container border-none text-on-surface placeholder:text-on-surface-variant/40 rounded-lg pl-12 pr-4 py-3 focus:ring-1 focus:ring-primary/30 transition-all" placeholder="Search by Tag ID or Description..." type="text"/>
+        </div>
+        <a href="{{ url_for('image_view', file_id=file_id) }}" class="bg-primary text-on-primary px-6 py-3 rounded-lg font-semibold hover:bg-primary-dim transition-colors">View Image</a>
+      </div>
+    </section>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div class="bg-surface-container-low p-6 rounded-lg border border-outline-variant/10">
+        <span class="text-xs uppercase tracking-widest text-on-surface-variant block mb-2">Modality</span>
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary" data-icon="neurology">neurology</span>
+          <span class="text-xl font-bold font-headline">{{ modality }}</span>
+        </div>
+      </div>
+      <div class="bg-surface-container-low p-6 rounded-lg border border-outline-variant/10">
+        <span class="text-xs uppercase tracking-widest text-on-surface-variant block mb-2">Patient ID</span>
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary" data-icon="person">person</span>
+          <span class="text-xl font-bold font-headline">{{ patient_id }}</span>
+        </div>
+      </div>
+      <div class="bg-surface-container-low p-6 rounded-lg border border-outline-variant/10">
+        <span class="text-xs uppercase tracking-widest text-on-surface-variant block mb-2">Slice Count</span>
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary" data-icon="reorder">reorder</span>
+          <span class="text-xl font-bold font-headline">{{ slice_count }}</span>
+        </div>
+      </div>
+      <div class="bg-surface-container-low p-6 rounded-lg border border-outline-variant/10">
+        <span class="text-xs uppercase tracking-widest text-on-surface-variant block mb-2">Encryption</span>
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-primary" data-icon="verified_user">verified_user</span>
+          <span class="text-xl font-bold font-headline">{{ encryption }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="bg-surface-container rounded-xl overflow-hidden shadow-2xl border border-outline-variant/5">
+      <div class="grid grid-cols-3 bg-surface-container-high border-b border-outline-variant/20 px-6 py-4">
+        <div class="text-xs font-bold uppercase tracking-widest text-primary/80">Tag ID</div>
+        <div class="text-xs font-bold uppercase tracking-widest text-primary/80">Description</div>
+        <div class="text-xs font-bold uppercase tracking-widest text-primary/80">Value</div>
+      </div>
+      <div class="max-h-[600px] overflow-y-auto custom-scrollbar" id="tag-table">
+        {% for tag in tags %}
+          <div class="grid grid-cols-3 px-6 py-5 items-center {% if loop.index % 2 == 0 %}bg-surface-container-low/30{% endif %} hover:bg-surface-container-highest/50 transition-colors group tag-row" data-tag="{{ tag.tag }}" data-name="{{ tag.name }}">
+            <div class="font-mono text-sm text-on-surface-variant">{{ tag.tag }}</div>
+            <div class="font-semibold text-on-surface">{{ tag.name }}</div>
+            <div class="font-mono text-sm text-primary tracking-tight truncate">{{ tag.value }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="mt-8 flex justify-between items-center text-on-surface-variant">
+      <div class="flex items-center gap-4 text-xs font-mono">
+        <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span> SYSTEM READY</span>
+        <span class="opacity-30">|</span>
+        <span>TAG_COUNT: {{ tags|length }}</span>
+      </div>
+    </div>
+  </div>
 </main>
-
-<script>
-document.getElementById('tag-search').addEventListener('input', function() {
-    const query = this.value.toLowerCase();
-    const rows = document.querySelectorAll('.tag-row');
-    rows.forEach(row => {
-        const tag = row.dataset.tag.toLowerCase();
-        const name = row.dataset.name.toLowerCase();
-        if (tag.includes(query) || name.includes(query)) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-});
-</script>
-</body></html>
+{% endblock %}

@@ -8,13 +8,15 @@ from typing import Dict, Optional, Tuple
 
 import numpy as np
 import pydicom
-from flask import Flask, flash, get_flashed_messages, redirect, render_template, request, url_for
+from flask import Flask, flash, get_flashed_messages, redirect, render_template, request, session, url_for
 from PIL import Image
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"dcm", "dicom"}
 MAX_CONTENT_LENGTH = 50 * 1024 * 1024
+MAX_SESSION_BYTES = 2 * 1024 * 1024 * 1024
+SESSION_UPLOADS_KEY = "session_uploads"
 
 app = Flask(__name__)
 app.secret_key = "change-this-secret"
@@ -27,6 +29,27 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def allowed_file(filename: str) -> bool:
     extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
     return extension in ALLOWED_EXTENSIONS
+
+
+def get_session_uploads() -> list:
+    return session.get(SESSION_UPLOADS_KEY, [])
+
+
+def get_session_total_bytes() -> int:
+    return sum(item.get("size", 0) for item in get_session_uploads())
+
+
+def add_upload_to_session(file_id: str, filename: str, size: int) -> None:
+    uploads = get_session_uploads()
+    uploads.append(
+        {
+            "file_id": file_id,
+            "filename": filename,
+            "size": size,
+            "uploaded_at": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+    )
+    session[SESSION_UPLOADS_KEY] = uploads
 
 
 def normalize_tag_query(query: str) -> str:
@@ -157,13 +180,36 @@ def index():
             flash("Aucun fichier sélectionné.")
             return redirect(url_for("index"))
         if file and allowed_file(file.filename):
+            file_size = len(file.read())
+            file.seek(0)
+            if get_session_total_bytes() + file_size > MAX_SESSION_BYTES:
+                flash("Limite de session atteinte : supprimez des fichiers ou rafraichissez la page.")
+                return redirect(url_for("index"))
+
             file_id = str(uuid.uuid4())
             path = get_uploaded_file_path(file_id)
             file.save(path)
+            add_upload_to_session(file_id, file.filename, file_size)
             return redirect(url_for("view_dicom", file_id=file_id))
         flash("Format non autorisé. Utilisez un fichier DICOM (.dcm ou .dicom).")
         return redirect(url_for("index"))
-    return render_template("index.html")
+
+    session_uploads = get_session_uploads()
+    session_total_mb = round(get_session_total_bytes() / (1024 * 1024), 1)
+    session_limit_gb = round(MAX_SESSION_BYTES / (1024 * 1024 * 1024), 1)
+    return render_template(
+        "index.html",
+        session_uploads=session_uploads,
+        session_total_mb=session_total_mb,
+        session_limit_gb=session_limit_gb,
+        session_upload_count=len(session_uploads),
+    )
+
+@app.route("/clear_session", methods=["POST"])
+def clear_session():
+    session.pop(SESSION_UPLOADS_KEY, None)
+    flash("Session réinitialisée avec succès.")
+    return redirect(url_for("index"))
 
 @app.route("/view/<file_id>", methods=["GET"])
 def view_dicom(file_id: str):

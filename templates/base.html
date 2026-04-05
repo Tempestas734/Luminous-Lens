@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html class="dark" lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>{% block title %}Luminous Lens{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% block extra_head %}{% endblock %}
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "on-error-container": "#ff9993",
+            primary: "#66d9cc",
+            "secondary-fixed-dim": "#c1d8e4",
+            "on-primary-container": "#71e3d5",
+            "on-primary": "#004943",
+            "error-dim": "#bb5551",
+            "primary-dim": "#56cbbe",
+            "surface-container-high": "#1f2020",
+            "surface-container-lowest": "#000000",
+            "on-tertiary": "#4a6551",
+            "tertiary-fixed-dim": "#cbead1",
+            "on-background": "#e7e5e4",
+            "primary-container": "#005049",
+            "on-error": "#490106",
+            "tertiary-fixed": "#daf9df",
+            "outline-variant": "#484848",
+            "on-tertiary-container": "#425d4a",
+            "surface-tint": "#66d9cc",
+            "secondary-dim": "#8ba1ac",
+            "inverse-primary": "#006b63",
+            "on-secondary-container": "#acc3ce",
+            secondary: "#8ba1ac",
+            "on-tertiary-fixed": "#334e3b",
+            "on-surface": "#e7e5e4",
+            error: "#ee7d77",
+            "surface-container-highest": "#252626",
+            "secondary-container": "#293e48",
+            "error-container": "#7f2927",
+            "surface-container-low": "#131313",
+            "tertiary-dim": "#cbead1",
+            "inverse-surface": "#fcf8f8",
+            "on-surface-variant": "#acabaa",
+            "secondary-fixed": "#cfe6f2",
+            "surface-dim": "#0e0e0e",
+            "surface-bright": "#2c2c2c",
+            "primary-fixed-dim": "#75e7da",
+            "on-secondary-fixed": "#2d424c",
+            "surface-variant": "#252626",
+            "inverse-on-surface": "#565554",
+            "on-tertiary-fixed-variant": "#4f6b57",
+            "tertiary-container": "#d4f3d9",
+            "on-primary-fixed-variant": "#00675f",
+            surface: "#0e0e0e",
+            "primary-fixed": "#84f5e8",
+            "on-primary-fixed": "#004842",
+            "on-secondary": "#0d232b",
+            tertiary: "#e9ffec",
+            outline: "#767575",
+          },
+          borderRadius: {
+            DEFAULT: "0.125rem",
+            lg: "0.25rem",
+            xl: "0.5rem",
+            full: "0.75rem",
+          },
+          fontFamily: {
+            headline: ["Manrope"],
+            body: ["Inter"],
+            label: ["Inter"],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    }
+    .upload-grid-pattern {
+      background-image: radial-gradient(#66d9cc 0.5px, transparent 0.5px);
+      background-size: 24px 24px;
+      opacity: 0.05;
+    }
+    .glass-effect {
+      backdrop-filter: blur(20px);
+      background-color: rgba(25, 26, 26, 0.8);
+    }
+    .glow-hover:hover {
+      box-shadow: 0 0 20px rgba(102, 217, 204, 0.15);
+    }
+    .drag-over {
+      border-color: #66d9cc !important;
+      background-color: rgba(102, 217, 204, 0.05) !important;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0e0e0e;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #484848;
+      border-radius: 2px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #66d9cc;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary/30 min-h-screen flex flex-col">
+  {% include '_navbar.html' %}
+  {% if get_flashed_messages() %}
+    <div class="mt-20 px-6 py-4 max-w-6xl mx-auto w-full">
+      <div class="bg-error-container/10 border border-error-container rounded-lg p-4 text-on-error-container text-sm">
+        {% for msg in get_flashed_messages() %}
+          <p class="mb-1">{{ msg }}</p>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+  <main class="flex-grow pt-16">
+    {% block content %}{% endblock %}
+  </main>
+  {% include '_footer.html' %}
+  {% block scripts %}{% endblock %}
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
