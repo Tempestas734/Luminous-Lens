@@ -1,103 +1,115 @@
 # Luminous Lens
 
-A modern web-based DICOM medical image viewer built with Flask. Upload, view, and analyze DICOM files with adjustable windowing and comprehensive metadata display.
+A sophisticated web-based DICOM image viewer built with Flask, designed for medical professionals to visualize and analyze DICOM images directly in the browser without specialized software.
 
 ## Features
 
-- **DICOM Upload**: Secure file upload with support for .dcm and .dicom formats (max 50MB)
-- **Image Visualization**:
-  - Automatic conversion to PNG for web display
-  - Adjustable windowing (center/width) for optimal contrast
-  - Support for MONOCHROME1 and MONOCHROME2 photometric interpretations
-  - Thumbnail generation for quick browsing
-- **Metadata Display**:
-  - Complete DICOM tag table with hex codes, names, VR, and values
-  - Interactive tag search by name or hex code
-  - Patient information (name, ID, birth date)
-  - Study details (description, date, UID)
-  - Institution information
-- **Recent Studies**: Browse uploaded files with thumbnails, sorted by upload date
-- **Responsive Design**: Modern UI built with Tailwind CSS
+- **DICOM Upload & Processing**: Support for .dcm, .dicom files and compressed .zip series
+- **Metadata Extraction**: Automatic extraction and display of DICOM tags with search functionality
+- **Image Visualization**: Interactive DICOM image viewer with windowing controls (brightness/contrast)
+- **Session Management**: Upload tracking with storage limits (2GB per session) and session clearing
+- **Responsive Design**: Modern Material Design-inspired UI with Tailwind CSS
+- **Archive View**: Gallery view of uploaded studies with thumbnails
+
+## Technologies
+
+- **Backend**: Python Flask
+- **Frontend**: HTML5, Tailwind CSS, JavaScript
+- **DICOM Processing**: pydicom, PIL (Pillow)
+- **Styling**: Material Symbols, Custom color palette
+- **Deployment**: Ready for web server deployment
 
 ## Installation
 
-### Prerequisites
-- Python 3.8 or higher
-- pip package manager
-
-### Setup
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/Tempestas734/Luminous-Lens.git
-   cd Luminous-Lens
-   ```
+```bash
+git clone https://github.com/Tempestas734/Luminous-Lens.git
+cd Luminous-Lens
+```
 
 2. Create a virtual environment:
-   ```bash
-   python -m venv .venv
-   # On Windows:
-   .venv\Scripts\activate
-   # On macOS/Linux:
-   source .venv/bin/activate
-   ```
+```bash
+python -m venv .venv
+# On Windows:
+.venv\Scripts\activate
+# On macOS/Linux:
+source .venv/bin/activate
+```
 
 3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+```bash
+pip install -r requirements.txt
+```
 
 ## Usage
 
 1. Start the application:
-   ```bash
-   python app.py
-   ```
+```bash
+python app.py
+```
 
 2. Open your browser and navigate to `http://localhost:5000`
 
-3. Upload a DICOM file using the upload form
+3. Upload DICOM files using drag & drop or the browse button
 
-4. View the image with adjustable windowing controls
-
-5. Explore metadata in the tags table
-
-6. Search for specific DICOM tags
-
-7. Browse recent uploads in the "Recent" section
-
-## Technologies
-
-- **Backend**: Flask (Python web framework)
-- **DICOM Processing**: pydicom library
-- **Image Processing**: Pillow (PIL) and NumPy
-- **Frontend**: HTML5, Tailwind CSS, JavaScript
-- **Icons**: Material Symbols Outlined
+4. View metadata, visualize images, and manage your session
 
 ## Project Structure
 
 ```
 Luminous-Lens/
 ├── app.py                 # Main Flask application
-├── dicom_1.py            # DICOM utility script
 ├── requirements.txt       # Python dependencies
-├── .gitignore            # Git ignore rules
 ├── static/
-│   ├── style.css         # Custom CSS styles
-│   ├── upload.js         # Upload functionality
-│   └── viewer.js         # Image viewer controls
+│   ├── style.css         # Shared CSS styles
+│   ├── app.js            # Consolidated JavaScript
+│   └── tailwind-config.js # Tailwind configuration
 ├── templates/
+│   ├── base.html         # Base template with navbar/footer
 │   ├── index.html        # Upload page
-│   ├── view.html         # Main viewer page
-│   ├── image_view.html   # Image-only view
-│   └── recent.html       # Recent uploads page
-└── uploads/              # Uploaded DICOM files (gitignored)
+│   ├── view.html         # Metadata viewer
+│   ├── image_view.html   # DICOM image viewer
+│   ├── recent.html       # Archive/gallery view
+│   ├── _navbar.html      # Navigation component
+│   └── _footer.html      # Footer component
+└── uploads/              # Uploaded files directory
 ```
 
-## API Endpoints
+## Features in Detail
 
-- `GET /` - Upload page
-- `POST /` - Handle file upload
-- `GET /view/<file_id>` - View DICOM with metadata
+### Session Management
+- Tracks uploaded files with timestamps and sizes
+- Enforces 2GB storage limit per session
+- Provides clear session functionality
+- Displays real-time storage usage
+
+### DICOM Processing
+- Validates DICOM files and extracts metadata
+- Handles compressed series (.zip files)
+- Converts images for web display
+- Maintains patient data privacy
+
+### User Interface
+- Clean, professional design suitable for medical use
+- Responsive layout for desktop and mobile
+- Intuitive drag-and-drop upload
+- Interactive image controls
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Disclaimer
+
+This software is for educational and research purposes. It is not intended for clinical use without proper validation and regulatory approval. Always consult with qualified medical professionals for diagnostic decisions.
 - `GET /image/<file_id>` - Image-only view
 - `GET /image_data/<file_id>` - JSON image data endpoint
 - `GET /recent` - Recent uploads page
