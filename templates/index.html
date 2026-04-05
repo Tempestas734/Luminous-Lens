@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html class="dark" lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Luminous Lens | Diagnostic Upload</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='upload.js') }}"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-error-container": "#ff9993",
+            "primary": "#66d9cc",
+            "secondary-fixed-dim": "#c1d8e4",
+            "on-primary-container": "#71e3d5",
+            "on-primary": "#004943",
+            "error-dim": "#bb5551",
+            "primary-dim": "#56cbbe",
+            "surface-container-high": "#1f2020",
+            "surface-container-lowest": "#000000",
+            "on-tertiary": "#4a6551",
+            "tertiary-fixed-dim": "#cbead1",
+            "on-background": "#e7e5e4",
+            "primary-container": "#005049",
+            "on-error": "#490106",
+            "tertiary-fixed": "#daf9df",
+            "outline-variant": "#484848",
+            "on-tertiary-container": "#425d4a",
+            "surface-tint": "#66d9cc",
+            "secondary-dim": "#8ba1ac",
+            "inverse-primary": "#006b63",
+            "on-secondary-container": "#acc3ce",
+            "secondary": "#8ba1ac",
+            "on-tertiary-fixed": "#334e3b",
+            "on-surface": "#e7e5e4",
+            "error": "#ee7d77",
+            "surface-container-highest": "#252626",
+            "secondary-container": "#293e48",
+            "error-container": "#7f2927",
+            "surface-container-low": "#131313",
+            "tertiary-dim": "#cbead1",
+            "inverse-surface": "#fcf8f8",
+            "on-surface-variant": "#acabaa",
+            "secondary-fixed": "#cfe6f2",
+            "surface-dim": "#0e0e0e",
+            "surface-bright": "#2c2c2c",
+            "primary-fixed-dim": "#75e7da",
+            "on-secondary-fixed": "#2d424c",
+            "surface-variant": "#252626",
+            "on-secondary-fixed-variant": "#495f69",
+            "surface-container": "#191a1a",
+            "inverse-on-surface": "#565554",
+            "on-tertiary-fixed-variant": "#4f6b57",
+            "tertiary-container": "#d4f3d9",
+            "on-primary-fixed-variant": "#00675f",
+            "surface": "#0e0e0e",
+            "primary-fixed": "#84f5e8",
+            "on-primary-fixed": "#004842",
+            "on-secondary": "#0d232b",
+            "tertiary": "#e9ffec",
+            "outline": "#767575"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "fontFamily": {
+            "headline": ["Manrope"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+    }
+    .upload-grid-pattern {
+      background-image: radial-gradient(#66d9cc 0.5px, transparent 0.5px);
+      background-size: 24px 24px;
+      opacity: 0.05;
+    }
+    .glass-effect {
+      backdrop-filter: blur(20px);
+      background-color: rgba(25, 26, 26, 0.8);
+    }
+    .glow-hover:hover {
+      box-shadow: 0 0 20px rgba(102, 217, 204, 0.15);
+    }
+    .drag-over {
+      border-color: #66d9cc !important;
+      background-color: rgba(102, 217, 204, 0.05) !important;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary/30 min-h-screen flex flex-col">
+  <!-- TopNavBar Implementation -->
+  <header class="bg-[#0e0e0e] text-[#66d9cc] font-['Manrope'] tracking-tight flex justify-between items-center px-6 h-16 w-full z-50 fixed top-0">
+    <div class="flex items-center gap-8">
+      <span class="text-xl font-bold text-[#66d9cc]">Luminous Lens</span>
+      <nav class="hidden md:flex gap-6 items-center">
+        <a class="text-[#66d9cc] hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="{{ url_for('index') }}">Viewer</a>
+        <a class="text-[#e7e5e4]/60 hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="{{ url_for('recent') }}">Archive</a>
+        <a class="text-[#e7e5e4]/60 hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="#">Analysis</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-4">
+      <span class="material-symbols-outlined text-[#e7e5e4]/60 hover:text-[#66d9cc] cursor-pointer transition-colors" data-icon="settings">settings</span>
+      <span class="material-symbols-outlined text-[#e7e5e4]/60 hover:text-[#66d9cc] cursor-pointer transition-colors" data-icon="help">help</span>
+      <span class="material-symbols-outlined text-[#e7e5e4]/60 hover:text-[#66d9cc] cursor-pointer transition-colors" data-icon="account_circle">account_circle</span>
+    </div>
+  </header>
+
+  <!-- Main Content Canvas -->
+  <main class="flex-grow pt-16 flex items-center justify-center relative overflow-hidden">
+    <!-- Abstract Background Decor -->
+    <div class="absolute inset-0 upload-grid-pattern pointer-events-none"></div>
+    <div class="absolute -top-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-primary-container/10 rounded-full blur-[150px] pointer-events-none"></div>
+
+    <div class="max-w-5xl w-full px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 relative z-10">
+      <!-- Left Column: Instructions & Context -->
+      <div class="lg:col-span-5 flex flex-col justify-center py-8">
+        <div class="mb-2">
+          <span class="text-primary font-label text-xs uppercase tracking-[0.2em] font-semibold">Interface de Diagnostic</span>
+        </div>
+        <h1 class="font-headline text-4xl lg:text-5xl font-extrabold text-on-surface leading-tight mb-6 tracking-tighter">
+          Imagerie de <br/>
+          <span class="text-primary">Haute Précision</span>
+        </h1>
+        <p class="text-on-surface-variant text-lg leading-relaxed mb-10 max-w-md">
+          Luminous Lens offre une visualisation diagnostique parfaite. Téléchargez votre série DICOM pour lancer la segmentation assistée par IA et la reconstruction multi-planar.
+        </p>
+        <div class="space-y-6">
+          <div class="flex gap-4 items-start">
+            <div class="mt-1 w-8 h-8 rounded-sm bg-surface-container-highest flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-primary text-sm" data-icon="encrypted">encrypted</span>
+            </div>
+            <div>
+              <h3 class="font-headline font-semibold text-on-surface text-base">Conforme HIPAA</h3>
+              <p class="text-on-surface-variant text-sm font-light">Chiffrement de bout en bout pour tous les transferts de données PHI.</p>
+            </div>
+          </div>
+          <div class="flex gap-4 items-start">
+            <div class="mt-1 w-8 h-8 rounded-sm bg-surface-container-highest flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-primary text-sm" data-icon="cloud_sync">cloud_sync</span>
+            </div>
+            <div>
+              <h3 class="font-headline font-semibold text-on-surface text-base">Intégration DICOM</h3>
+              <p class="text-on-surface-variant text-sm font-light">Extraction automatique des métadonnées et liaison des patients.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Upload Zone (Bento Style) -->
+      <div class="lg:col-span-7 flex flex-col gap-4">
+        <!-- Main Upload Card -->
+        <div class="bg-surface-container rounded-lg p-1 group transition-all duration-500 hover:bg-primary/5">
+          <form method="post" enctype="multipart/form-data" id="upload-form">
+            <div id="upload-zone" class="border-2 border-dashed border-primary/20 rounded-lg bg-surface-container-lowest h-96 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:border-primary/40">
+              <div class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <div class="relative z-10 flex flex-col items-center text-center p-8">
+                <div class="w-20 h-20 mb-6 bg-surface-container-highest rounded-full flex items-center justify-center ring-8 ring-surface-container-lowest transition-transform duration-500 group-hover:scale-110">
+                  <span class="material-symbols-outlined text-primary text-4xl" data-icon="upload_file">upload_file</span>
+                </div>
+                <h2 class="font-headline text-xl font-bold text-on-surface mb-2">Glissez & Déposez les fichiers DICOM</h2>
+                <p class="text-on-surface-variant text-sm mb-8 max-w-xs">
+                  Supporte .dcm, .dicom et séries compressées .zip.
+                </p>
+                <input type="file" id="dicom_file" name="dicom_file" accept=".dcm,.dicom,.zip" style="display: none;" />
+                <button type="button" id="browse-btn" class="bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold py-3 px-8 rounded-sm text-sm uppercase tracking-widest glow-hover transition-all active:scale-95">
+                  Parcourir les fichiers
+                </button>
+              </div>
+              <!-- Footer Specs within Upload Area -->
+              <div class="absolute bottom-6 left-0 right-0 flex justify-center gap-8 px-6">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[16px] text-on-surface-variant" data-icon="database">database</span>
+                  <span class="text-[10px] font-mono text-on-surface-variant uppercase">Max 2GB / Session</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[16px] text-on-surface-variant" data-icon="check_circle">check_circle</span>
+                  <span class="text-[10px] font-mono text-on-surface-variant uppercase">Tags Vérifiés</span>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Recent Activity / Stats Grid -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-surface-container p-5 rounded-lg flex flex-col gap-3">
+            <div class="flex justify-between items-start">
+              <span class="material-symbols-outlined text-primary text-xl" data-icon="history">history</span>
+              <span class="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase font-bold tracking-tighter">Actif</span>
+            </div>
+            <div>
+              <p class="text-on-surface-variant text-[10px] uppercase font-bold tracking-widest mb-1">Dernier Upload</p>
+              <p class="text-on-surface font-headline font-semibold text-sm">Axial_Brain_T2.zip</p>
+            </div>
+          </div>
+          <div class="bg-surface-container p-5 rounded-lg flex flex-col gap-3">
+            <div class="flex justify-between items-start">
+              <span class="material-symbols-outlined text-on-surface-variant text-xl" data-icon="storage">storage</span>
+            </div>
+            <div>
+              <p class="text-on-surface-variant text-[10px] uppercase font-bold tracking-widest mb-1">Utilisation Stockage</p>
+              <div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+                <div class="h-full bg-primary w-2/3"></div>
+              </div>
+              <p class="text-on-surface font-headline font-semibold text-sm mt-2">12.4 GB / 20 GB</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Visual Accent Corner -->
+  <div class="fixed bottom-0 left-0 p-8 hidden lg:block opacity-30">
+    <div class="flex items-center gap-4 group cursor-default">
+      <div class="w-12 h-[1px] bg-outline-variant group-hover:w-16 transition-all"></div>
+      <span class="text-[10px] font-mono tracking-widest uppercase text-on-surface-variant">État Système: Nominal</span>
+    </div>
+  </div>
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+body {
+    background-color: #0e0e0e;
+    color: #e7e5e4;
+    font-family: "Inter", sans-serif;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #66d9cc;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(102, 217, 204, 0.4);
+}
+
+.slider::-moz-range-thumb {
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background: #66d9cc;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 8px rgba(102, 217, 204, 0.4);
+}
+
+.glass-panel {
+    background: rgba(25, 26, 26, 0.8);
+    backdrop-filter: blur(20px);
+}
+
+.image-grain {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuAyuDBQhiE34st9dyvtrMeM1HRKYLGJsOoHBx9lQdJ9Qfl4BNmCZNeBIjbdXqQJfMl6t0IkFzXmxWrmw1BWNLr9frUvQLi3BwsfWmaGEQ_hxfN23MeqUPnvAVhVuaGm3IkctwtVpUCAuc172XGONQxBRQB_cyin754vj5TrCHiB_leMxeBL7qSD7TKU4sLrFHRstSVE8H_VPQNRkWGQsTsvTijuJT7g7wqPz1KWaYYMwjnBKQ2lF1TnLIbU6uqbrPLj7fp9saq86H0);
+    opacity: 0.03;
+    pointer-events: none;
+}
