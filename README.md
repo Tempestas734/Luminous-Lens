@@ -95,34 +95,14 @@ Luminous-Lens/
 - Intuitive drag-and-drop upload
 - Interactive image controls
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## Disclaimer
 
 This software is for educational and research purposes. It is not intended for clinical use without proper validation and regulatory approval. Always consult with qualified medical professionals for diagnostic decisions.
-- `GET /image/<file_id>` - Image-only view
-- `GET /image_data/<file_id>` - JSON image data endpoint
-- `GET /recent` - Recent uploads page
 
-## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
-## License
+
+
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
