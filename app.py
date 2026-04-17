@@ -8,7 +8,7 @@ from typing import Dict, Optional, Tuple
 
 import numpy as np
 import pydicom
-from flask import Flask, flash, get_flashed_messages, redirect, render_template, request, session, url_for
+from flask import Flask, flash, redirect, render_template, request, session, url_for
 from PIL import Image
 from werkzeug.utils import secure_filename
 
@@ -19,28 +19,35 @@ MAX_SESSION_BYTES = 2 * 1024 * 1024 * 1024
 SESSION_UPLOADS_KEY = "session_uploads"
 
 app = Flask(__name__)
-app.secret_key = "change-this-secret"
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-secret-key-change-me")
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-def allowed_file(filename: str) -> bool:
+def fichier_autorise(filename: str) -> bool:
     extension = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
     return extension in ALLOWED_EXTENSIONS
 
 
-def get_session_uploads() -> list:
-    return session.get(SESSION_UPLOADS_KEY, [])
+def obtenir_televersements_session() -> list:
+    uploads = session.get(SESSION_UPLOADS_KEY, [])
+    uploads_valides = [
+        item for item in uploads
+        if os.path.exists(obtenir_chemin_fichier_televerse(item.get("file_id", "")))
+    ]
+    if len(uploads_valides) != len(uploads):
+        session[SESSION_UPLOADS_KEY] = uploads_valides
+    return uploads_valides
 
 
-def get_session_total_bytes() -> int:
-    return sum(item.get("size", 0) for item in get_session_uploads())
+def obtenir_total_octets_session() -> int:
+    return sum(item.get("size", 0) for item in obtenir_televersements_session())
 
 
-def add_upload_to_session(file_id: str, filename: str, size: int) -> None:
-    uploads = get_session_uploads()
+def ajouter_televersement_session(file_id: str, filename: str, size: int) -> None:
+    uploads = obtenir_televersements_session()
     uploads.append(
         {
             "file_id": file_id,
@@ -52,11 +59,11 @@ def add_upload_to_session(file_id: str, filename: str, size: int) -> None:
     session[SESSION_UPLOADS_KEY] = uploads
 
 
-def normalize_tag_query(query: str) -> str:
+def normaliser_requete_tag(query: str) -> str:
     return query.strip().lower()
 
 
-def get_windowing(ds: pydicom.dataset.Dataset) -> Tuple[Optional[float], Optional[float]]:
+def obtenir_fenetrage(ds: pydicom.dataset.Dataset) -> Tuple[Optional[float], Optional[float]]:
     wc = ds.get("WindowCenter", None)
     ww = ds.get("WindowWidth", None)
     if isinstance(wc, pydicom.multival.MultiValue):
@@ -74,7 +81,7 @@ def get_windowing(ds: pydicom.dataset.Dataset) -> Tuple[Optional[float], Optiona
     return wc, ww
 
 
-def rescale_pixel_array(ds: pydicom.dataset.Dataset, arr: np.ndarray) -> np.ndarray:
+def reechantillonner_tableau_pixels(ds: pydicom.dataset.Dataset, arr: np.ndarray) -> np.ndarray:
     slope = float(ds.get("RescaleSlope", 1.0))
     intercept = float(ds.get("RescaleIntercept", 0.0))
     if slope != 1.0 or intercept != 0.0:
@@ -82,7 +89,7 @@ def rescale_pixel_array(ds: pydicom.dataset.Dataset, arr: np.ndarray) -> np.ndar
     return arr
 
 
-def apply_window(arr: np.ndarray, center: float, width: float) -> np.ndarray:
+def appliquer_fenetre(arr: np.ndarray, center: float, width: float) -> np.ndarray:
     if width <= 0:
         width = 1.0
     low = center - width / 2.0
@@ -92,10 +99,69 @@ def apply_window(arr: np.ndarray, center: float, width: float) -> np.ndarray:
     return arr
 
 
-def dicom_to_base64(ds: pydicom.dataset.Dataset, center: float, width: float) -> str:
+def preparer_tableau_pour_image(arr: np.ndarray) -> np.ndarray:
+    arr = np.asarray(arr)
+
+    # Drop useless singleton dimensions while preserving image semantics.
+    while arr.ndim > 3 and 1 in arr.shape:
+        arr = np.squeeze(arr, axis=tuple(index for index, size in enumerate(arr.shape) if size == 1))
+
+    if arr.ndim == 0:
+        raise ValueError("Le tableau DICOM ne contient pas de donnees image exploitables.")
+
+    if arr.ndim == 1:
+        return arr[np.newaxis, :]
+
+    if arr.ndim == 2:
+        return arr
+
+    if arr.ndim == 3:
+        if arr.shape[-1] in (3, 4):
+            return arr
+        if arr.shape[0] == 1:
+            return preparer_tableau_pour_image(arr[0])
+        if arr.shape[-1] == 1:
+            return preparer_tableau_pour_image(arr[..., 0])
+        return preparer_tableau_pour_image(arr[0])
+
+    return preparer_tableau_pour_image(arr.reshape(arr.shape[-2], arr.shape[-1]))
+
+
+def charger_dicom(file_id: str, *, stop_before_pixels: bool = False) -> Optional[pydicom.dataset.Dataset]:
+    path = obtenir_chemin_fichier_televerse(file_id)
+    if not os.path.exists(path):
+        return None
+    return pydicom.dcmread(path, stop_before_pixels=stop_before_pixels)
+
+
+def obtenir_fenetrage_par_defaut(ds: pydicom.dataset.Dataset) -> Tuple[float, float]:
+    wc_default, ww_default = obtenir_fenetrage(ds)
+    if wc_default is not None and ww_default is not None:
+        return wc_default, ww_default
+
+    pixel_array = reechantillonner_tableau_pixels(ds, ds.pixel_array.astype(np.float32))
+    pixel_array = preparer_tableau_pour_image(pixel_array)
+    wc_default = float(np.mean(pixel_array))
+    ww_default = float(np.max(pixel_array) - np.min(pixel_array))
+    if ww_default <= 0:
+        ww_default = 1.0
+    return wc_default, ww_default
+
+
+def formater_date_dicom(study_date: str) -> str:
+    if not study_date or study_date == "N/A":
+        return "N/A"
+    try:
+        return datetime.strptime(study_date, "%Y%m%d").strftime("%b %d, %Y")
+    except ValueError:
+        return study_date
+
+
+def dicom_vers_base64(ds: pydicom.dataset.Dataset, center: float, width: float) -> str:
     pixel_array = ds.pixel_array.astype(np.float32)
-    pixel_array = rescale_pixel_array(ds, pixel_array)
-    pixel_array = apply_window(pixel_array, center, width)
+    pixel_array = reechantillonner_tableau_pixels(ds, pixel_array)
+    pixel_array = appliquer_fenetre(pixel_array, center, width)
+    pixel_array = preparer_tableau_pour_image(pixel_array)
     if getattr(ds, "PhotometricInterpretation", "MONOCHROME2") == "MONOCHROME1":
         pixel_array = 1.0 - pixel_array
     image = Image.fromarray((pixel_array * 255).astype(np.uint8))
@@ -104,15 +170,16 @@ def dicom_to_base64(ds: pydicom.dataset.Dataset, center: float, width: float) ->
     return base64.b64encode(buffered.getvalue()).decode("ascii")
 
 
-def dicom_to_thumbnail(ds: pydicom.dataset.Dataset) -> str:
+def dicom_vers_vignette(ds: pydicom.dataset.Dataset) -> str:
     pixel_array = ds.pixel_array.astype(np.float32)
-    pixel_array = rescale_pixel_array(ds, pixel_array)
+    pixel_array = reechantillonner_tableau_pixels(ds, pixel_array)
     # Use default windowing for thumbnail
-    wc, ww = get_windowing(ds)
+    wc, ww = obtenir_fenetrage(ds)
     if wc is None or ww is None:
         wc = float(np.mean(pixel_array))
         ww = float(np.max(pixel_array) - np.min(pixel_array))
-    pixel_array = apply_window(pixel_array, wc, ww)
+    pixel_array = appliquer_fenetre(pixel_array, wc, ww)
+    pixel_array = preparer_tableau_pour_image(pixel_array)
     if getattr(ds, "PhotometricInterpretation", "MONOCHROME2") == "MONOCHROME1":
         pixel_array = 1.0 - pixel_array
     image = Image.fromarray((pixel_array * 255).astype(np.uint8))
@@ -123,13 +190,13 @@ def dicom_to_thumbnail(ds: pydicom.dataset.Dataset) -> str:
     return base64.b64encode(buffered.getvalue()).decode("ascii")
 
 
-def format_dicom_value(value) -> str:
+def formater_valeur_dicom(value) -> str:
     if isinstance(value, (list, tuple, pydicom.multival.MultiValue)):
         return ", ".join(str(v) for v in value) if value else ""
     return str(value)
 
 
-def build_tag_table(ds: pydicom.dataset.Dataset) -> list[Dict[str, str]]:
+def construire_table_tags(ds: pydicom.dataset.Dataset) -> list[Dict[str, str]]:
     rows = []
     for elem in ds.iterall():
         rows.append(
@@ -137,14 +204,14 @@ def build_tag_table(ds: pydicom.dataset.Dataset) -> list[Dict[str, str]]:
                 "tag": f"({elem.tag.group:04X},{elem.tag.element:04X})",
                 "name": elem.keyword or elem.name,
                 "vr": elem.VR,
-                "value": format_dicom_value(elem.value),
+                "value": formater_valeur_dicom(elem.value),
             }
         )
     return rows
 
 
-def find_tag_value(ds: pydicom.dataset.Dataset, query: str) -> Optional[str]:
-    normalized = normalize_tag_query(query)
+def trouver_valeur_tag(ds: pydicom.dataset.Dataset, query: str) -> Optional[str]:
+    normalized = normaliser_requete_tag(query)
     if not normalized:
         return None
 
@@ -155,47 +222,54 @@ def find_tag_value(ds: pydicom.dataset.Dataset, query: str) -> Optional[str]:
         element = int(match.group(2), 16)
         tag = pydicom.tag.Tag(group, element)
         if tag in ds:
-            return format_dicom_value(ds[tag].value)
+            return formater_valeur_dicom(ds[tag].value)
         return None
 
     query_lower = normalized
     for elem in ds.iterall():
         name = (elem.keyword or elem.name or "").lower()
         if query_lower == name or query_lower in name:
-            return format_dicom_value(elem.value)
+            return formater_valeur_dicom(elem.value)
     return None
 
 
-def get_uploaded_file_path(file_id: str) -> str:
+def obtenir_chemin_fichier_televerse(file_id: str) -> str:
     return os.path.join(app.config["UPLOAD_FOLDER"], f"{secure_filename(file_id)}.dcm")
 
 @app.route("/", methods=["GET", "POST"])
-def index():
+def accueil():
     if request.method == "POST":
         if "dicom_file" not in request.files:
             flash("Aucun fichier sélectionné.")
-            return redirect(url_for("index"))
+            return redirect(url_for("accueil"))
         file = request.files["dicom_file"]
         if file.filename == "":
             flash("Aucun fichier sélectionné.")
-            return redirect(url_for("index"))
-        if file and allowed_file(file.filename):
+            return redirect(url_for("accueil"))
+        if file and fichier_autorise(file.filename):
             file_size = len(file.read())
             file.seek(0)
-            if get_session_total_bytes() + file_size > MAX_SESSION_BYTES:
+            if obtenir_total_octets_session() + file_size > MAX_SESSION_BYTES:
                 flash("Limite de session atteinte : supprimez des fichiers ou rafraichissez la page.")
-                return redirect(url_for("index"))
+                return redirect(url_for("accueil"))
 
             file_id = str(uuid.uuid4())
-            path = get_uploaded_file_path(file_id)
-            file.save(path)
-            add_upload_to_session(file_id, file.filename, file_size)
-            return redirect(url_for("view_dicom", file_id=file_id))
+            path = obtenir_chemin_fichier_televerse(file_id)
+            try:
+                file.save(path)
+                pydicom.dcmread(path, stop_before_pixels=True)
+            except Exception:
+                if os.path.exists(path):
+                    os.remove(path)
+                flash("Le fichier selectionne n'est pas un DICOM valide.")
+                return redirect(url_for("accueil"))
+            ajouter_televersement_session(file_id, file.filename, file_size)
+            return redirect(url_for("voir_dicom", file_id=file_id))
         flash("Format non autorisé. Utilisez un fichier DICOM (.dcm ou .dicom).")
-        return redirect(url_for("index"))
+        return redirect(url_for("accueil"))
 
-    session_uploads = get_session_uploads()
-    session_total_mb = round(get_session_total_bytes() / (1024 * 1024), 1)
+    session_uploads = obtenir_televersements_session()
+    session_total_mb = round(obtenir_total_octets_session() / (1024 * 1024), 1)
     session_limit_gb = round(MAX_SESSION_BYTES / (1024 * 1024 * 1024), 1)
     return render_template(
         "index.html",
@@ -206,23 +280,31 @@ def index():
     )
 
 @app.route("/clear_session", methods=["POST"])
-def clear_session():
+def vider_session():
+    for item in obtenir_televersements_session():
+        path = obtenir_chemin_fichier_televerse(item.get("file_id", ""))
+        if os.path.exists(path):
+            os.remove(path)
     session.pop(SESSION_UPLOADS_KEY, None)
     flash("Session réinitialisée avec succès.")
-    return redirect(url_for("index"))
+    return redirect(url_for("accueil"))
 
 @app.route("/view/<file_id>", methods=["GET"])
-def view_dicom(file_id: str):
-    path = get_uploaded_file_path(file_id)
-    if not os.path.exists(path):
+def voir_dicom(file_id: str):
+    try:
+        ds = charger_dicom(file_id)
+    except Exception:
+        flash("Impossible de lire ce fichier DICOM.")
+        return redirect(url_for("accueil"))
+    if ds is None:
         flash("Fichier DICOM introuvable ou expiré.")
-        return redirect(url_for("index"))
+        return redirect(url_for("accueil"))
 
-    ds = pydicom.dcmread(path)
-    wc_default, ww_default = get_windowing(ds)
-    if wc_default is None or ww_default is None:
-        wc_default = float(np.mean(ds.pixel_array))
-        ww_default = float(np.max(ds.pixel_array) - np.min(ds.pixel_array))
+    try:
+        wc_default, ww_default = obtenir_fenetrage_par_defaut(ds)
+    except Exception:
+        flash("Le rendu de l'image DICOM a échoué.")
+        return redirect(url_for("accueil"))
 
     wc = request.args.get("window_center", str(wc_default))
     ww = request.args.get("window_width", str(ww_default))
@@ -237,12 +319,16 @@ def view_dicom(file_id: str):
     except ValueError:
         window_width = ww_default
 
-    image_data = dicom_to_base64(ds, window_center, window_width)
-    tag_value = find_tag_value(ds, tag_query) if tag_query.strip() else None
+    try:
+        image_data = dicom_vers_base64(ds, window_center, window_width)
+    except Exception:
+        flash("Le rendu de l'image DICOM a échoué.")
+        return redirect(url_for("accueil"))
+    tag_value = trouver_valeur_tag(ds, tag_query) if tag_query.strip() else None
     if tag_query and tag_value is None:
         flash(f"Tag non trouvé pour '{tag_query}'.")
 
-    tags = build_tag_table(ds)
+    tags = construire_table_tags(ds)
     # Extract summary metadata
     modality = ds.get("Modality", "N/A")
     patient_id = ds.get("PatientID", "N/A")
@@ -283,16 +369,15 @@ def view_dicom(file_id: str):
     )
 
 @app.route("/image_data/<file_id>", methods=["GET"])
-def image_data_endpoint(file_id: str):
-    path = get_uploaded_file_path(file_id)
-    if not os.path.exists(path):
+def donnees_image(file_id: str):
+    try:
+        ds = charger_dicom(file_id)
+    except Exception:
+        return {"error": "Invalid DICOM file"}, 400
+    if ds is None:
         return {"error": "File not found"}, 404
 
-    ds = pydicom.dcmread(path)
-    wc_default, ww_default = get_windowing(ds)
-    if wc_default is None or ww_default is None:
-        wc_default = float(np.mean(ds.pixel_array))
-        ww_default = float(np.max(ds.pixel_array) - np.min(ds.pixel_array))
+    wc_default, ww_default = obtenir_fenetrage_par_defaut(ds)
 
     wc = request.args.get("wc", str(wc_default))
     ww = request.args.get("ww", str(ww_default))
@@ -306,21 +391,24 @@ def image_data_endpoint(file_id: str):
     except ValueError:
         window_width = ww_default
 
-    image_data = dicom_to_base64(ds, window_center, window_width)
+    try:
+        image_data = dicom_vers_base64(ds, window_center, window_width)
+    except Exception:
+        return {"error": "Unable to render image"}, 400
     return {"image_data": image_data}
 
 @app.route("/image/<file_id>", methods=["GET"])
-def image_view(file_id: str):
-    path = get_uploaded_file_path(file_id)
-    if not os.path.exists(path):
+def vue_image(file_id: str):
+    try:
+        ds = charger_dicom(file_id)
+    except Exception:
+        flash("Impossible de lire ce fichier DICOM.")
+        return redirect(url_for("accueil"))
+    if ds is None:
         flash("Fichier DICOM introuvable ou expiré.")
-        return redirect(url_for("index"))
+        return redirect(url_for("accueil"))
 
-    ds = pydicom.dcmread(path)
-    wc_default, ww_default = get_windowing(ds)
-    if wc_default is None or ww_default is None:
-        wc_default = float(np.mean(ds.pixel_array))
-        ww_default = float(np.max(ds.pixel_array) - np.min(ds.pixel_array))
+    wc_default, ww_default = obtenir_fenetrage_par_defaut(ds)
 
     wc = request.args.get("wc", str(wc_default))
     ww = request.args.get("ww", str(ww_default))
@@ -334,7 +422,11 @@ def image_view(file_id: str):
     except ValueError:
         window_width = ww_default
 
-    image_data = dicom_to_base64(ds, window_center, window_width)
+    try:
+        image_data = dicom_vers_base64(ds, window_center, window_width)
+    except Exception:
+        flash("Le rendu de l'image DICOM a échoué.")
+        return redirect(url_for("accueil"))
 
     # Extract metadata
     patient_name = ds.get("PatientName", "N/A")
@@ -363,7 +455,7 @@ def image_view(file_id: str):
     )
 
 @app.route("/recent", methods=["GET"])
-def recent():
+def recents():
     studies = []
     total_size = 0
     upload_folder = app.config["UPLOAD_FOLDER"]
@@ -372,37 +464,37 @@ def recent():
             file_id = filename[:-4]  # remove .dcm
             path = os.path.join(upload_folder, filename)
             try:
-                ds = pydicom.dcmread(path, stop_before_pixels=True)  # Read metadata only for speed
+                ds = pydicom.dcmread(path, stop_before_pixels=True)
                 patient_name = str(ds.get("PatientName", "Unknown"))
                 modality = ds.get("Modality", "UNK")
-                study_date = ds.get("StudyDate", "N/A")
-                if study_date != "N/A":
-                    study_date = datetime.strptime(study_date, "%Y%m%d").strftime("%b %d, %Y")
-                else:
-                    study_date = "N/A"
+                study_date = formater_date_dicom(ds.get("StudyDate", "N/A"))
                 file_size = os.path.getsize(path)
                 total_size += file_size
                 file_size_mb = round(file_size / (1024 * 1024), 1)
-                upload_date = datetime.fromtimestamp(os.path.getmtime(path)).strftime("%b %d, %Y")
-                # For thumbnail, need to read pixels
+                upload_timestamp = os.path.getmtime(path)
+                upload_date = datetime.fromtimestamp(upload_timestamp).strftime("%b %d, %Y")
                 ds_full = pydicom.dcmread(path)
-                thumbnail = dicom_to_thumbnail(ds_full)
+                thumbnail = dicom_vers_vignette(ds_full)
                 studies.append({
                     "file_id": file_id,
                     "patient_name": patient_name,
                     "modality": modality,
                     "study_date": study_date,
                     "upload_date": upload_date,
+                    "upload_timestamp": upload_timestamp,
                     "file_size_mb": file_size_mb,
                     "thumbnail": thumbnail,
                 })
-            except Exception as e:
-                print(f"Error reading {filename}: {e}")
+            except Exception:
                 continue
-    studies.sort(key=lambda x: x["upload_date"], reverse=True)  # Sort by upload date descending
+    studies.sort(key=lambda x: x["upload_timestamp"], reverse=True)
     total_studies = len(studies)
     total_size_gb = round(total_size / (1024**3), 1)
     return render_template("recent.html", studies=studies, total_studies=total_studies, total_size_gb=total_size_gb)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", "5000")),
+        debug=os.environ.get("FLASK_DEBUG", "").lower() in {"1", "true", "yes"},
+    )

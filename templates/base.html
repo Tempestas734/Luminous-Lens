@@ -116,15 +116,17 @@
 </head>
 <body class="bg-background text-on-surface font-body selection:bg-primary/30 min-h-screen flex flex-col">
   {% include '_navbar.html' %}
-  {% if get_flashed_messages() %}
-    <div class="mt-20 px-6 py-4 max-w-6xl mx-auto w-full">
-      <div class="bg-error-container/10 border border-error-container rounded-lg p-4 text-on-error-container text-sm">
-        {% for msg in get_flashed_messages() %}
-          <p class="mb-1">{{ msg }}</p>
-        {% endfor %}
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="mt-20 px-6 py-4 max-w-6xl mx-auto w-full">
+        <div class="bg-error-container/10 border border-error-container rounded-lg p-4 text-on-error-container text-sm">
+          {% for msg in messages %}
+            <p class="mb-1">{{ msg }}</p>
+          {% endfor %}
+        </div>
       </div>
-    </div>
-  {% endif %}
+    {% endif %}
+  {% endwith %}
   <main class="flex-grow pt-16">
     {% block content %}{% endblock %}
   </main>

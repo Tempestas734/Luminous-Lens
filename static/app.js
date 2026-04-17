@@ -1,4 +1,18 @@
 document.addEventListener('DOMContentLoaded', function() {
+    const importFormGlobal = document.getElementById('import-form-global');
+    const importInputGlobal = document.getElementById('import-dicom-global');
+    const importBtnGlobal = document.getElementById('import-btn-global');
+
+    if (importFormGlobal && importInputGlobal && importBtnGlobal) {
+        importBtnGlobal.addEventListener('click', () => importInputGlobal.click());
+
+        importInputGlobal.addEventListener('change', () => {
+            if (importInputGlobal.files.length > 0) {
+                importFormGlobal.submit();
+            }
+        });
+    }
+
     // Upload page behaviors
     const uploadZone = document.getElementById('upload-zone');
     const fileInput = document.getElementById('dicom_file');

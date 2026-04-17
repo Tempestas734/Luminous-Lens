@@ -2,8 +2,15 @@
   <div class="flex items-center gap-8">
     <span class="text-xl font-bold text-[#66d9cc]">Luminous Lens</span>
     <nav class="hidden md:flex gap-6 items-center">
-      <a class="text-[#66d9cc] hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="{{ url_for('index') }}">Viewer</a>
-      <a class="text-[#e7e5e4]/60 hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="{{ url_for('recent') }}">Archive</a>
+      <a class="text-[#66d9cc] hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="{{ url_for('accueil') }}">Viewer</a>
+      <a class="text-[#e7e5e4]/60 hover:text-[#66d9cc] transition-colors cursor-pointer active:opacity-80" href="{{ url_for('recents') }}">Archive</a>
     </nav>
   </div>
+  <form method="post" action="{{ url_for('accueil') }}" enctype="multipart/form-data" id="import-form-global" class="m-0">
+    <input type="file" id="import-dicom-global" name="dicom_file" accept=".dcm,.dicom" class="hidden" />
+    <button type="button" id="import-btn-global" class="inline-flex items-center gap-2 rounded-sm border border-primary/25 bg-primary/10 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary transition hover:bg-primary hover:text-on-primary">
+      <span class="material-symbols-outlined text-base" data-icon="upload_file">upload_file</span>
+      Importer un DCM
+    </button>
+  </form>
 </header>

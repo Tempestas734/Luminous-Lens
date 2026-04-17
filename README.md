@@ -4,7 +4,7 @@ A sophisticated web-based DICOM image viewer built with Flask, designed for medi
 
 ## Features
 
-- **DICOM Upload & Processing**: Support for .dcm, .dicom files and compressed .zip series
+- **DICOM Upload & Processing**: Support for .dcm and .dicom files
 - **Metadata Extraction**: Automatic extraction and display of DICOM tags with search functionality
 - **Image Visualization**: Interactive DICOM image viewer with windowing controls (brightness/contrast)
 - **Session Management**: Upload tracking with storage limits (2GB per session) and session clearing
@@ -85,7 +85,7 @@ Luminous-Lens/
 
 ### DICOM Processing
 - Validates DICOM files and extracts metadata
-- Handles compressed series (.zip files)
+- Handles validated DICOM uploads with metadata extraction
 - Converts images for web display
 - Maintains patient data privacy
 
