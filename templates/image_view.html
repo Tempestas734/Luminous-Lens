@@ -18,68 +18,93 @@
       </div>
     </div>
     <div class="absolute top-20 right-6 z-20">
-      <a href="{{ url_for('voir_dicom', file_id=file_id) }}" class="inline-flex items-center gap-2 bg-primary text-on-primary px-3 py-2 rounded-sm text-[11px] uppercase tracking-[0.18em] font-semibold shadow-lg hover:bg-primary-dim transition-colors">
+      <a href="{{ url_for('voir_dicom', file_id=file_id, frame=current_frame) }}" class="inline-flex items-center gap-2 bg-primary text-on-primary px-3 py-2 rounded-sm text-[11px] uppercase tracking-[0.18em] font-semibold shadow-lg hover:bg-primary-dim transition-colors">
         <span class="material-symbols-outlined text-sm">tag</span>
-        View Tags
+        Voir Les Tags
       </a>
     </div>
-    <div class="absolute bottom-28 left-6 z-10 pointer-events-none">
-      <div class="flex flex-col gap-1 rounded-sm bg-[#111111cc] px-3 py-2 shadow-lg">
+    <div class="absolute bottom-6 left-6 z-20 flex flex-col gap-3">
+      {% if slice_count > 1 %}
+      <div class="rounded-sm bg-[#111111d9] px-4 py-3 shadow-lg">
+        <div class="flex items-center gap-2 mb-3">
+          <button id="play-slices" type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-sm bg-surface-container-high text-on-surface hover:bg-primary hover:text-on-primary transition-colors">
+            <span class="material-symbols-outlined text-base">play_arrow</span>
+          </button>
+          <button id="pause-slices" type="button" class="inline-flex h-9 w-9 items-center justify-center rounded-sm bg-primary text-on-primary hover:bg-primary-dim transition-colors">
+            <span class="material-symbols-outlined text-base">pause</span>
+          </button>
+          <div class="ml-2 flex items-center gap-1 rounded-sm bg-surface-container-high px-1 py-1">
+            <button id="speed-half" type="button" data-speed="0.5" class="slice-speed-btn rounded-sm px-2 py-1 text-[10px] font-semibold text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors">0.5x</button>
+            <button id="speed-normal" type="button" data-speed="1" class="slice-speed-btn rounded-sm px-2 py-1 text-[10px] font-semibold bg-primary text-on-primary transition-colors">1x</button>
+            <button id="speed-double" type="button" data-speed="2" class="slice-speed-btn rounded-sm px-2 py-1 text-[10px] font-semibold text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors">2x</button>
+            <button id="speed-triple" type="button" data-speed="3" class="slice-speed-btn rounded-sm px-2 py-1 text-[10px] font-semibold text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors">3x</button>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 min-w-[260px]">
+          <span class="text-[10px] text-on-surface-variant/70">1</span>
+          <input type="range" min="1" max="{{ slice_count }}" value="{{ current_frame + 1 }}" class="w-full h-1 bg-surface-variant rounded-full appearance-none cursor-pointer slider" id="slice-slider">
+          <span class="text-[10px] text-on-surface-variant/70">{{ slice_count }}</span>
+        </div>
+      </div>
+      {% endif %}
+      <div class="pointer-events-none">
+        <div class="flex flex-col gap-1 rounded-sm bg-[#111111cc] px-3 py-2 shadow-lg">
         <span class="text-primary font-label text-xs font-semibold">WL: {{ window_center }} / WW: {{ window_width }}</span>
         <span class="text-on-surface-variant font-label text-xs" id="zoom-level">ZOOM: {{ zoom }}%</span>
         <span class="text-on-surface-variant font-label text-xs" id="mouse-coords">X: 0, Y: 0</span>
+        </div>
       </div>
     </div>
-    <div class="flex-1 flex items-center justify-center p-8 bg-surface-container-lowest">
-      <div class="relative w-full h-full flex items-center justify-center">
-        <img id="dicom-image" data-file-id="{{ file_id }}" alt="DICOM X-Ray View" class="max-w-full max-h-full w-auto h-auto cursor-grab" src="data:image/png;base64,{{ image_data }}" />
+    <div class="flex-1 flex items-center justify-center p-6 bg-surface-container-lowest">
+      <div class="relative flex max-w-full max-h-full items-center justify-center overflow-hidden rounded-sm">
+        <img id="dicom-image" data-file-id="{{ file_id }}" data-current-frame="{{ current_frame }}" data-slice-count="{{ slice_count }}" alt="DICOM X-Ray View" class="block max-w-full max-h-[calc(100vh-140px)] w-auto h-auto object-contain select-none cursor-grab" src="data:image/png;base64,{{ image_data }}" />
       </div>
     </div>
   </main>
   <aside class="w-80 bg-surface-container flex flex-col p-6 space-y-8 z-30">
     <header class="flex items-center justify-between">
-      <h3 class="font-headline font-bold text-on-surface tracking-tight uppercase text-sm">Windowing Controls</h3>
+      <h3 class="font-headline font-bold text-on-surface tracking-tight uppercase text-sm">Reglage Du Fenetrage</h3>
       <span class="material-symbols-outlined text-primary text-lg" data-icon="tune">tune</span>
     </header>
     <div class="space-y-10">
       <div class="space-y-4">
         <div class="flex justify-between items-center">
-          <label class="text-xs font-label uppercase text-on-surface-variant tracking-wider">Window Width</label>
+          <label class="text-xs font-label uppercase text-on-surface-variant tracking-wider">Largeur Fenetre</label>
           <span class="font-mono text-primary text-sm font-semibold" id="ww-value">{{ window_width }}</span>
         </div>
-        <input type="range" min="1" max="1024" value="{{ window_width }}" class="w-full h-1 bg-surface-variant rounded-full appearance-none cursor-pointer slider" id="ww-slider">
+        <input type="range" min="{{ window_bounds.ww_min }}" max="{{ window_bounds.ww_max }}" step="any" value="{{ window_width }}" class="w-full h-1 bg-surface-variant rounded-full appearance-none cursor-pointer slider" id="ww-slider">
         <div class="flex justify-between text-[10px] text-on-surface-variant/40">
-          <span>1</span>
-          <span>1024</span>
+          <span id="ww-min-label">{{ window_bounds.ww_min|round(2) }}</span>
+          <span id="ww-max-label">{{ window_bounds.ww_max|round(2) }}</span>
         </div>
       </div>
       <div class="space-y-4">
         <div class="flex justify-between items-center">
-          <label class="text-xs font-label uppercase text-on-surface-variant tracking-wider">Window Center</label>
+          <label class="text-xs font-label uppercase text-on-surface-variant tracking-wider">Centre Fenetre</label>
           <span class="font-mono text-primary text-sm font-semibold" id="wc-value">{{ window_center }}</span>
         </div>
-        <input type="range" min="-150" max="150" value="{{ window_center }}" class="w-full h-1 bg-surface-variant rounded-full appearance-none cursor-pointer slider" id="wc-slider">
+        <input type="range" min="{{ window_bounds.wc_min }}" max="{{ window_bounds.wc_max }}" step="any" value="{{ window_center }}" class="w-full h-1 bg-surface-variant rounded-full appearance-none cursor-pointer slider" id="wc-slider">
         <div class="flex justify-between text-[10px] text-on-surface-variant/40">
-          <span>-150</span>
-          <span>150</span>
+          <span id="wc-min-label">{{ window_bounds.wc_min|round(2) }}</span>
+          <span id="wc-max-label">{{ window_bounds.wc_max|round(2) }}</span>
         </div>
       </div>
     </div>
     <div class="space-y-4">
-      <h4 class="text-[10px] font-label uppercase text-on-surface-variant tracking-widest mb-4">Zoom Controls</h4>
+      <h4 class="text-[10px] font-label uppercase text-on-surface-variant tracking-widest mb-4">Controles Zoom</h4>
       <div class="flex gap-2">
         <button id="zoom-in" class="flex-1 bg-primary text-on-primary py-2 rounded-sm font-semibold text-xs uppercase hover:bg-primary-dim transition-colors">
           <span class="material-symbols-outlined text-sm mr-1">zoom_in</span>
-          Zoom In
+          Zoom +
         </button>
         <button id="zoom-out" class="flex-1 bg-surface-container-high text-on-surface py-2 rounded-sm font-semibold text-xs uppercase hover:bg-surface-container-highest transition-colors">
           <span class="material-symbols-outlined text-sm mr-1">zoom_out</span>
-          Zoom Out
+          Zoom -
         </button>
       </div>
       <button id="reset-zoom" class="w-full bg-surface-container-high text-on-surface py-2 rounded-sm font-semibold text-xs uppercase hover:bg-surface-container-highest transition-colors mt-2">
         <span class="material-symbols-outlined text-sm mr-1">restart_alt</span>
-        Reset Zoom
+        Reinitialiser
       </button>
     </div>
   </aside>

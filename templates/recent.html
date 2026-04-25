@@ -8,14 +8,34 @@
         <h1 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface mb-2">History & Archive</h1>
         <p class="font-body text-on-surface-variant max-w-xl">Access recent diagnostic imaging sessions. Review patient DICOM metadata and resume analysis seamlessly.</p>
       </div>
-      <div class="flex items-center space-x-2 bg-surface-container rounded-sm px-3 py-1.5 border border-outline-variant/15">
-        <span class="material-symbols-outlined text-on-surface-variant text-sm">filter_list</span>
-        <span class="text-xs font-label uppercase tracking-widest text-on-surface-variant">Sort By: Date Modified</span>
+      <div class="flex flex-wrap items-center gap-3">
+        <label class="flex items-center gap-2 bg-surface-container rounded-sm px-3 py-2 border border-outline-variant/15 text-xs font-label uppercase tracking-widest text-on-surface-variant cursor-pointer">
+          <input type="checkbox" id="select-all-archive" class="accent-[#66d9cc]">
+          <span>Tout Selectionner</span>
+        </label>
+        <div class="flex items-center space-x-2 bg-surface-container rounded-sm px-3 py-1.5 border border-outline-variant/15">
+          <span class="material-symbols-outlined text-on-surface-variant text-sm">filter_list</span>
+          <span class="text-xs font-label uppercase tracking-widest text-on-surface-variant">Sort By: Date Modified</span>
+        </div>
       </div>
+    </div>
+    <form method="post" action="{{ url_for('supprimer_archive') }}">
+    <div class="mb-6 flex flex-wrap items-center gap-3">
+      <button type="submit" name="action" value="selected" class="inline-flex items-center gap-2 rounded-sm border border-red-400/30 bg-red-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-red-300 hover:bg-red-500 hover:text-white transition-colors">
+        <span class="material-symbols-outlined text-sm">delete</span>
+        Delete Selected
+      </button>
+      <button type="submit" name="action" value="all" class="inline-flex items-center gap-2 rounded-sm border border-red-400/30 bg-red-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-red-300 hover:bg-red-500 hover:text-white transition-colors" onclick="return confirm('Supprimer toute l\\'archive ?');">
+        <span class="material-symbols-outlined text-sm">delete_sweep</span>
+        Delete All Archive
+      </button>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {% for study in studies %}
       <div class="group relative bg-surface-container rounded-sm overflow-hidden transition-all duration-300 hover:bg-surface-container-high ring-1 ring-outline-variant/10 hover:ring-primary/30">
+        <label class="absolute top-3 right-3 z-20 inline-flex h-8 w-8 items-center justify-center rounded-sm bg-[#111111d9] border border-outline-variant/20 cursor-pointer">
+          <input type="checkbox" name="file_ids" value="{{ study.file_id }}" class="archive-select accent-[#66d9cc] h-4 w-4">
+        </label>
         <div class="aspect-video w-full relative bg-surface-container-lowest overflow-hidden">
           <img class="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500" src="data:image/png;base64,{{ study.thumbnail }}" alt="DICOM Thumbnail" />
           <div class="absolute inset-0 image-grain"></div>
@@ -40,14 +60,18 @@
         </div>
       </div>
       {% endfor %}
-      <div class="border-2 border-dashed border-outline-variant/20 rounded-sm flex flex-col items-center justify-center p-8 bg-surface-container/30 hover:bg-surface-container/50 transition-colors group">
-        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-          <span class="material-symbols-outlined text-primary">add</span>
-        </div>
-        <a href="{{ url_for('accueil') }}" class="font-headline font-bold text-on-surface">Upload New Study</a>
-        <span class="font-label text-[10px] uppercase text-on-surface-variant tracking-widest mt-2">DICOM</span>
-      </div>
+      <form method="post" action="{{ url_for('accueil') }}" enctype="multipart/form-data" id="archive-upload-form" class="border-2 border-dashed border-outline-variant/20 rounded-sm flex flex-col items-center justify-center p-8 bg-surface-container/30 hover:bg-surface-container/50 transition-colors group cursor-pointer">
+        <input type="file" id="archive-dicom-file" name="dicom_file" accept=".dcm,.dicom" class="hidden" />
+        <button type="button" id="archive-upload-btn" class="contents">
+          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <span class="material-symbols-outlined text-primary">add</span>
+          </div>
+          <span class="font-headline font-bold text-on-surface">Upload New Study</span>
+          <span class="font-label text-[10px] uppercase text-on-surface-variant tracking-widest mt-2">DICOM</span>
+        </button>
+      </form>
     </div>
+    </form>
     <div class="mt-12 flex flex-col md:flex-row items-center justify-between p-6 border-t border-outline-variant/10 gap-6">
       <div class="flex items-center space-x-8">
         <div>
@@ -73,4 +97,32 @@
     </div>
   </div>
 </main>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const selectAll = document.getElementById('select-all-archive');
+  const checkboxes = document.querySelectorAll('.archive-select');
+  const archiveUploadForm = document.getElementById('archive-upload-form');
+  const archiveUploadInput = document.getElementById('archive-dicom-file');
+  const archiveUploadBtn = document.getElementById('archive-upload-btn');
+  if (selectAll && checkboxes.length) {
+    selectAll.addEventListener('change', function () {
+      checkboxes.forEach((checkbox) => {
+        checkbox.checked = selectAll.checked;
+      });
+    });
+  }
+
+  if (archiveUploadForm && archiveUploadInput && archiveUploadBtn) {
+    archiveUploadBtn.addEventListener('click', function () {
+      archiveUploadInput.click();
+    });
+
+    archiveUploadInput.addEventListener('change', function () {
+      if (archiveUploadInput.files.length > 0) {
+        archiveUploadForm.submit();
+      }
+    });
+  }
+});
+</script>
 {% endblock %}

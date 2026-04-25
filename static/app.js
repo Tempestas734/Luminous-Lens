@@ -81,10 +81,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const img = document.getElementById('dicom-image');
     if (img) {
         const fileId = img.dataset.fileId;
+        const sliceSlider = document.getElementById('slice-slider');
+        const sliceIndicator = document.getElementById('slice-indicator');
+        const playSlicesBtn = document.getElementById('play-slices');
+        const pauseSlicesBtn = document.getElementById('pause-slices');
+        const speedButtons = Array.from(document.querySelectorAll('.slice-speed-btn'));
         const wwSlider = document.getElementById('ww-slider');
         const wcSlider = document.getElementById('wc-slider');
         const wwValue = document.getElementById('ww-value');
         const wcValue = document.getElementById('wc-value');
+        const wwMinLabel = document.getElementById('ww-min-label');
+        const wwMaxLabel = document.getElementById('ww-max-label');
+        const wcMinLabel = document.getElementById('wc-min-label');
+        const wcMaxLabel = document.getElementById('wc-max-label');
         const zoomInBtn = document.getElementById('zoom-in');
         const zoomOutBtn = document.getElementById('zoom-out');
         const resetZoomBtn = document.getElementById('reset-zoom');
@@ -102,19 +111,114 @@ document.addEventListener('DOMContentLoaded', function() {
         let startPanY = 0;
         let startMouseX = 0;
         let startMouseY = 0;
+        let currentFrame = Number(img.dataset.currentFrame || 0);
+        const sliceCount = Number(img.dataset.sliceCount || 1);
+        let autoplayId = null;
+        let autoplayDelay = 1000;
+        let isAutoplaying = false;
 
-        function updateImage() {
+        function updateWindowControls(data) {
+            if (typeof data.window_width === 'number') {
+                wwSlider.value = String(data.window_width);
+                if (wwValue) wwValue.textContent = String(data.window_width);
+            }
+            if (typeof data.window_center === 'number') {
+                wcSlider.value = String(data.window_center);
+                if (wcValue) wcValue.textContent = String(data.window_center);
+            }
+            if (data.window_bounds) {
+                wwSlider.min = String(data.window_bounds.ww_min);
+                wwSlider.max = String(data.window_bounds.ww_max);
+                wcSlider.min = String(data.window_bounds.wc_min);
+                wcSlider.max = String(data.window_bounds.wc_max);
+                if (wwMinLabel) wwMinLabel.textContent = Number(data.window_bounds.ww_min).toFixed(2);
+                if (wwMaxLabel) wwMaxLabel.textContent = Number(data.window_bounds.ww_max).toFixed(2);
+                if (wcMinLabel) wcMinLabel.textContent = Number(data.window_bounds.wc_min).toFixed(2);
+                if (wcMaxLabel) wcMaxLabel.textContent = Number(data.window_bounds.wc_max).toFixed(2);
+            }
+        }
+
+        function updateImage(useFrameDefaults = false) {
             if (!fileId) return;
             const ww = wwSlider.value;
             const wc = wcSlider.value;
-            fetch(`/image_data/${fileId}?ww=${ww}&wc=${wc}`)
+            const params = new URLSearchParams({
+                ww,
+                wc,
+                frame: String(currentFrame),
+            });
+            if (useFrameDefaults) {
+                params.set('use_frame_defaults', '1');
+            }
+            fetch(`/image_data/${fileId}?${params.toString()}`)
                 .then(response => response.json())
                 .then(data => {
                     img.src = 'data:image/png;base64,' + data.image_data;
+                    if (typeof data.frame_index === 'number') {
+                        currentFrame = data.frame_index;
+                        img.dataset.currentFrame = String(currentFrame);
+                    }
+                    updateWindowControls(data);
+                    updateSliceUI();
                 })
                 .catch(error => {
                     console.error('Error updating image:', error);
                 });
+        }
+
+        function updateSliceUI() {
+            if (sliceIndicator) {
+                sliceIndicator.textContent = `COUPE: ${currentFrame + 1}/${sliceCount}`;
+            }
+            if (sliceSlider) {
+                sliceSlider.value = String(currentFrame + 1);
+            }
+        }
+
+        function setPlaybackButtonState() {
+            if (playSlicesBtn) {
+                playSlicesBtn.className = `inline-flex h-9 w-9 items-center justify-center rounded-sm transition-colors ${
+                    isAutoplaying
+                        ? 'bg-primary text-on-primary hover:bg-primary-dim'
+                        : 'bg-surface-container-high text-on-surface hover:bg-primary hover:text-on-primary'
+                }`;
+            }
+            if (pauseSlicesBtn) {
+                pauseSlicesBtn.className = `inline-flex h-9 w-9 items-center justify-center rounded-sm transition-colors ${
+                    isAutoplaying
+                        ? 'bg-surface-container-high text-on-surface hover:bg-surface-container-highest'
+                        : 'bg-primary text-on-primary hover:bg-primary-dim'
+                }`;
+            }
+        }
+
+        function setSpeedState(speedValue) {
+            speedButtons.forEach((button) => {
+                const active = Number(button.dataset.speed) === speedValue;
+                button.className = active
+                    ? 'slice-speed-btn rounded-sm px-2 py-1 text-[10px] font-semibold bg-primary text-on-primary transition-colors'
+                    : 'slice-speed-btn rounded-sm px-2 py-1 text-[10px] font-semibold text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors';
+            });
+        }
+
+        function stopAutoplay() {
+            if (autoplayId) {
+                window.clearInterval(autoplayId);
+                autoplayId = null;
+            }
+            isAutoplaying = false;
+            setPlaybackButtonState();
+        }
+
+        function startAutoplay() {
+            if (!sliceSlider || sliceCount <= 1 || autoplayId) return;
+            isAutoplaying = true;
+            setPlaybackButtonState();
+            autoplayId = window.setInterval(() => {
+                currentFrame = (currentFrame + 1) % sliceCount;
+                updateSliceUI();
+                updateImage(true);
+            }, autoplayDelay);
         }
 
         function applyTransform() {
@@ -151,16 +255,52 @@ document.addEventListener('DOMContentLoaded', function() {
         if (wwSlider) {
             wwSlider.addEventListener('input', function() {
                 if (wwValue) wwValue.textContent = this.value;
-                updateImage();
+                updateImage(false);
             });
         }
 
         if (wcSlider) {
             wcSlider.addEventListener('input', function() {
                 if (wcValue) wcValue.textContent = this.value;
-                updateImage();
+                updateImage(false);
             });
         }
+
+        if (sliceSlider) {
+            sliceSlider.addEventListener('input', function() {
+                stopAutoplay();
+                currentFrame = Math.max(0, Number(this.value) - 1);
+                updateSliceUI();
+                updateImage(true);
+            });
+        }
+
+        if (playSlicesBtn) {
+            playSlicesBtn.addEventListener('click', function() {
+                startAutoplay();
+            });
+        }
+
+        if (pauseSlicesBtn) {
+            pauseSlicesBtn.addEventListener('click', function() {
+                stopAutoplay();
+            });
+        }
+
+        speedButtons.forEach((button) => {
+            button.addEventListener('click', function() {
+                const speed = Number(this.dataset.speed || 1);
+                if (speed === 0.5) autoplayDelay = 2000;
+                if (speed === 1) autoplayDelay = 1000;
+                if (speed === 2) autoplayDelay = 500;
+                if (speed === 3) autoplayDelay = 333;
+                setSpeedState(speed);
+                if (isAutoplaying) {
+                    stopAutoplay();
+                    startAutoplay();
+                }
+            });
+        });
 
         if (zoomInBtn) {
             zoomInBtn.addEventListener('click', function() {
@@ -193,6 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         img.addEventListener('mouseenter', updateImageRect);
+        img.addEventListener('load', updateImageRect);
         window.addEventListener('resize', updateImageRect);
 
         img.addEventListener('wheel', function(e) {
@@ -227,6 +368,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
+        updateSliceUI();
+        setPlaybackButtonState();
+        setSpeedState(1);
         applyTransform();
     }
 });
